@@ -259,18 +259,34 @@ At the time of writing this is gcc 11.2.0, e.g.</p>
 <p>On Levante the default version is above 3.26.0 so this should be fine. In case you have trouble,
 you can use spack to find (and load) a higher version yourself (<code class="docutils literal notranslate"><span class="pre">spack</span> <span class="pre">find</span> <span class="pre">cmake</span></code>).</p>
 </section>
-<section id="python">
-<h2>Python<a class="headerlink" href="#python" title="Link to this heading">¶</a></h2>
-<p>We advise you to create an environment using our <code class="docutils literal notranslate"><span class="pre">envirnoment.yaml</span></code> file.
-This environment should automatically include all the additional packages you may require.
-If not, please <a class="reference internal" href="contact.html#contact"><span class="std std-ref">contact us</span></a> or
-<a class="reference external" href="https://github.com/yoctoyotta1024/SDM-1D-KiD/issues/new">open a new issue</a>
-on our GitHub repository.</p>
-<p>You can install Python packages to an existing Conda (or Micromamba) environment via:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>micromamba<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>--file<span class="o">=</span>environment.yaml
-<span class="gp">$ </span>micromamba<span class="w"> </span>activate<span class="w"> </span><span class="o">[</span>your<span class="w"> </span>environment<span class="o">]</span>
+<section id="yac">
+<h2>YAC<a class="headerlink" href="#yac" title="Link to this heading">¶</a></h2>
+<p>YAC is one of the external libraries which Cleo requires. YAC (and its YAXT dependency) need to be
+installed manually before you can build Cleo with them.
+Please refer to Cleo’s instructions on how to
+<a class="reference external" href="https://yoctoyotta1024.github.io/CLEO/usage/installation/extern.html">install YAC and YAX</a>.</p>
+<p>YAC also requires some additional MPI, NetCDF and yaml libraries alongside the compatible gcc/intel
+compiler. E.g. On Levante with gcc 11.2.0:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>module<span class="w"> </span>load<span class="w"> </span>gcc/11.2.0-gcc-11.2.0<span class="w"> </span>openmpi@4.1.2%gcc@11.2.0<span class="w"> </span>netcdf-c/4.8.1-openmpi-4.1.2-gcc-11.2.0
+<span class="gp">$ </span>spack<span class="w"> </span>load<span class="w"> </span>openblas@0.3.18%gcc@<span class="o">=</span><span class="m">11</span>.2.0
 </pre></div>
 </div>
+<p>When you want to run Cleo, you will also need to export the fyaml library and python bindings paths,
+e.g. On Levante:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">LD_LIBRARY_PATH</span><span class="o">=</span><span class="si">${</span><span class="nv">LD_LIBRARY_PATH</span><span class="si">}</span>:/sw/spack-levante/libfyaml-0.7.12-fvbhgo/lib
+<span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="si">${</span><span class="nv">PYTHONPATH</span><span class="si">}</span>:/your/path/to/yac/python/
+</pre></div>
+</div>
+</section>
+<section id="python">
+<h2>Python<a class="headerlink" href="#python" title="Link to this heading">¶</a></h2>
+<p>We advise you to create an environment using our <code class="docutils literal notranslate"><span class="pre">envirnoment.yaml</span></code> file and
+<a class="reference external" href="https://docs.astral.sh/uv/">uv</a> (see <a class="reference internal" href="getstart.html#getstart"><span class="std std-ref">Getting Started</span></a>). Your <code class="docutils literal notranslate"><span class="pre">uv</span></code> environment should then
+automatically include all the additional packages you may require. If not, please
+<a class="reference internal" href="contact.html#contact"><span class="std std-ref">contact us</span></a> or <a class="reference external" href="https://github.com/yoctoyotta1024/SDM-1D-KiD/issues/new">open a new issue</a>
+on our GitHub repository.</p>
+<div class="admonition-mpi4py-on-hpcs admonition">
+<p class="admonition-title">mpi4py on HPCs</p>
 <p>On HPCs, running python with MPI via a conda/mamba environment can create all sorts of issues
 because you want to use the HPC’s MPI installation, but conda/mamba installs it’s own
 (see e.g. <a class="reference external" href="https://conda-forge.org/docs/user/tipsandtricks/#using-external-message-passing-interface-mpi-libraries">https://conda-forge.org/docs/user/tipsandtricks/#using-external-message-passing-interface-mpi-libraries</a>).
@@ -278,22 +294,22 @@ On Levante, we have found that installing conda’s mpi wrapper, de- and re-inst
 deleting any mpi libraries installed by mamba/conda seems to do the trick via this sequence of
 commands:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>module<span class="w"> </span>load<span class="w"> </span>python3<span class="w"> </span>gcc/11.2.0-gcc-11.2.0<span class="w"> </span>openmpi/4.1.2-gcc-11.2.0
-<span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">MPI4PY_BUILD_MPICC</span><span class="o">=</span>/sw/spack-levante/openmpi-4.1.2-mnmady/bin/mpicc
-<span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">MPI4PY_BUILD_MPILD</span><span class="o">=</span>/sw/spack-levante/openmpi-4.1.2-mnmady/lib
-
-<span class="gp">$ </span>mamba<span class="w"> </span>install<span class="w"> </span><span class="nv">mpi</span><span class="o">=</span>*<span class="o">=</span>*
-<span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>uninstall<span class="w"> </span>mpi4py
-<span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-cache-dir<span class="w"> </span>--no-binary<span class="o">=</span>mpi4py<span class="w"> </span>mpi4py
-<span class="gp">$ </span>rm<span class="w">  </span>/work/bm1183/m300950/bin/envs/sdm1dkid/lib/libmpi.so
-<span class="gp">$ </span>rm<span class="w">  </span>/work/bm1183/m300950/bin/envs/sdm1dkid/lib/libmpi.so.40
-
-<span class="gp">$ </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">'import ctypes.util; print(ctypes.util.find_library("mpi"))'</span>
+<span class="gp">$ </span>uv<span class="w"> </span>pip<span class="w"> </span>uninstall<span class="w"> </span>mpi4py
+<span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">MPI4PY_BUILD_MPICC</span><span class="o">=</span>/sw/spack-levante/openmpi-4.1.2-mnmady/bin/mpicc<span class="w">  </span><span class="c1"># mpicc wrapper</span>
+<span class="gp">$ </span><span class="nb">export</span><span class="w"> </span><span class="nv">MPI4PY_BUILD_MPILD</span><span class="o">=</span>/sw/spack-levante/openmpi-4.1.2-mnmady/lib<span class="w">  </span><span class="c1"># path to mpi libraries (libmpi.so)</span>
+<span class="gp">$ </span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--no-cache-dir<span class="w"> </span>--no-binary<span class="o">=</span>mpi4py<span class="w"> </span>mpi4py
+<span class="gp">$ </span>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">'from mpi4py import MPI; print(f"MPI version: {MPI.Get_version()}")'</span><span class="w">  </span><span class="c1"># check installation</span>
 </pre></div>
 </div>
-<p>(If this still doesn’t work: try creating a <code class="docutils literal notranslate"><span class="pre">sdm1dkid</span></code> environment from a clone of
+<p>(<em>hint:</em> if this still doesn’t work: try creating a <code class="docutils literal notranslate"><span class="pre">sdm1dkid</span></code> environment from a clone of
 another environment that does work with MPI (e.g. <code class="docutils literal notranslate"><span class="pre">`clouds</span></code>), then install mpi4py, and afterwards
-install the other requirements (<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code>) and delete any
-<code class="docutils literal notranslate"><span class="pre">libmpi.so</span></code> and <code class="docutils literal notranslate"><span class="pre">libmpi.so.40</span></code> libraries created in the process.)</p>
+install the other requirements (<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements.txt</span></code>). Delete any
+<code class="docutils literal notranslate"><span class="pre">libmpi.so</span></code> and <code class="docutils literal notranslate"><span class="pre">libmpi.so.40</span></code> libraries created in the process, e.g.
+<code class="docutils literal notranslate"><span class="pre">rm</span>&#160; <span class="pre">/work/bm1183/m300950/bin/envs/sdm1dkid/lib/libmpi.so.40</span></code> and
+<code class="docutils literal notranslate"><span class="pre">rm</span> <span class="pre">/work/bm1183/m300950/bin/envs/sdm1dkid/lib/libmpi.so</span></code>.)</p>
+<p>See the <a class="reference external" href="https://mpi4py.readthedocs.io/en/stable/install.html#build-backends">mpi4py documentation</a>
+for more information.</p>
+</div>
 </section>
 </section>
 
@@ -356,6 +372,7 @@ install the other requirements (<code class="docutils literal notranslate"><span
 <li><a class="reference internal" href="#">Requirements</a><ul>
 <li><a class="reference internal" href="#compilers">Compilers</a></li>
 <li><a class="reference internal" href="#cmake">CMake</a></li>
+<li><a class="reference internal" href="#yac">YAC</a></li>
 <li><a class="reference internal" href="#python">Python</a></li>
 </ul>
 </li>
@@ -373,6 +390,6 @@ install the other requirements (<code class="docutils literal notranslate"><span
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/copybutton.js?v=35a8b989"></script>
     </body>
 </html>

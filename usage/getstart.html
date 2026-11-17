@@ -243,11 +243,35 @@
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/yoctoyotta1024/SDM-1D-KiD.git
 </pre></div>
 </div>
-<p>and install the pre-commit hooks:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pre-commit<span class="w"> </span>install
+<p>We provide a <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> file for creating the python version and all the pip-installable
+packages you need to use this repository (e.g to run the scripts, to build the documentation,
+or to run pre-commit etc.). We provide a <code class="docutils literal notranslate"><span class="pre">environment.yaml</span></code> file for all non-pip-installable
+packages available from conda-forge.</p>
+<p>Everything will be much easier for you if you install the python version and package depenencies as
+per our <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> file. You can acheive this quickly and simply using
+<a class="reference external" href="https://docs.astral.sh/uv/">uv</a>. <em>hint</em>: optionally, you can install <code class="docutils literal notranslate"><span class="pre">uv</span></code> within a
+Conda/Micromamba environment, which also installs our other non-pip-installable packages (e.g. doxygen)
+using our <code class="docutils literal notranslate"><span class="pre">environment.yaml</span></code> file, e.g.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>mamba<span class="w"> </span>create<span class="w"> </span>--file<span class="o">=</span>environment.yaml
+<span class="gp">$ </span>mamba<span class="w"> </span>activate<span class="w"> </span>sdm1dkid
+</pre></div>
+</div>
+<p>Using <code class="docutils literal notranslate"><span class="pre">uv</span></code> to setup python, simply do:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>uv<span class="w"> </span>sync
+</pre></div>
+</div>
+<p>Sometimes it is useful to know where uv has installed your python, in which case you can run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>uv<span class="w"> </span>python<span class="w"> </span>find
+</pre></div>
+</div>
+<p>Finally, install our pre-commit hooks:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
 </pre></div>
 </div>
 <p>That’s it, you’re done!</p>
+<p>We kindly ask that you also <a class="reference internal" href="contact.html#contact"><span class="std std-ref">contact us</span></a> or
+<a class="reference external" href="https://github.com/yoctoyotta1024/SDM-1D-KiD/issues/new">open a new issue</a>
+on our GitHub repository if you discover this environment is missing any packages.</p>
 <section id="using-pybind11-on-arm64-macbooks-with-m1-processors-instead-of-x86-64-architectures">
 <h2>Using PyBind11 on ARM64 (Macbooks with M1 Processors) instead of x86_64 Architectures<a class="headerlink" href="#using-pybind11-on-arm64-macbooks-with-m1-processors-instead-of-x86-64-architectures" title="Link to this heading">¶</a></h2>
 <p>If you are using Python on an ARM64 architecture (e.g. you have a Mac with an M1 silicon chip) then
@@ -344,6 +368,6 @@ conda enviroment which specifically uses conda-forge’s osx-arm64 directory to 
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/copybutton.js?v=35a8b989"></script>
     </body>
 </html>

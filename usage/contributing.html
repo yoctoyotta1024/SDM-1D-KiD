@@ -173,7 +173,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -232,7 +232,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
@@ -243,6 +243,139 @@
 <p>This project is a completely open source code and we are enthusiastic about its open development.
 If you have ideas or would like to collaborate, simply <a class="reference internal" href="contact.html#contact"><span class="std std-ref">contact us</span></a>!
 We welcome your interest.</p>
+<section id="contributing-guidelines">
+<h2><strong>Contributing Guidelines</strong><a class="headerlink" href="#contributing-guidelines" title="Link to this heading">¶</a></h2>
+<section id="how-to-contribute">
+<h3>How to Contribute?<a class="headerlink" href="#how-to-contribute" title="Link to this heading">¶</a></h3>
+<p>To contribute to this repository: fork the repository, create a branch for your
+contribution, and align with the following practices:</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#general-code-rules"><span class="std std-ref">Be consistent with our general coding rules</span></a></p></li>
+<li><p><a class="reference internal" href="#format-lint"><span class="std std-ref">Format and lint your code correctly</span></a></p></li>
+<li><p><a class="reference internal" href="#pre-commit"><span class="std std-ref">Use pre-commit to check your commits</span></a></p></li>
+<li><p><a class="reference internal" href="#conventional-commits"><span class="std std-ref">Use conventional commit messages</span></a></p></li>
+<li><p><a class="reference internal" href="#unit-tests"><span class="std std-ref">Create unit tests for your code</span></a></p></li>
+<li><p><a class="reference internal" href="#contrib-our-docs"><span class="std std-ref">Update the documentation with your contributions</span></a></p></li>
+</ol>
+<p>You can then contribute via pull request (PR) back into the source code repository.</p>
+<section id="the-rules-on-pull-requests">
+<h4>The Rules on Pull Requests<a class="headerlink" href="#the-rules-on-pull-requests" title="Link to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Your PRs *must* obey the practices listed above</strong> (see more details below).</p></li>
+<li><p><strong>Keep your PRs *up-to-date* by rebasing against main</strong>. Until a PR is merged into the main
+branch, is the responsibilty of the owner of the PR to keep it up-to-date and resolve any
+code-conflicts.</p></li>
+<li><dl class="simple">
+<dt><strong>*Note the 3x1 Rule:* One Branch; One Contribution; One PR</strong></dt><dd><ul>
+<li><p>One branch should contain one “contribution”.</p></li>
+<li><p>One “contribution” may be large, but should be as small as reasonably possible.</p></li>
+<li><p>One PR should contain one “contribution”. A PR will not be accepted if it is deemed
+to contain many contributions that could instead logically be split into smaller PRs from
+seperate branches.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><strong>Contributions from a ``main`` branch will never be accepted.</strong></p></li>
+</ul>
+</section>
+</section>
+<section id="general-coding-rules">
+<span id="general-code-rules"></span><h3>General Coding Rules<a class="headerlink" href="#general-coding-rules" title="Link to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Blend-in with whatever you change or add to.</p></li>
+<li><p>A new class/struct deserves a new file.</p></li>
+<li><p>As much code should be in <code class="docutils literal notranslate"><span class="pre">.cpp</span></code> rather than <code class="docutils literal notranslate"><span class="pre">.hpp</span></code> files as is reasonably possible.</p></li>
+<li><p>Improve code readability wherever possible, but take caution not to be overly verbose.</p></li>
+<li><p>Favour more-involved structral changes which will make the overall code better over more-elongated
+code and exceptional case handling.</p></li>
+<li><p>Name variables/functions/classes appropriately. Favour readable and descriptive names over shorter
+code. At the same time, take caution not to be overly verbose.</p></li>
+<li><p>All formulas, constants, physical values, numerical methods, etc. should be referenced (to
+papers, people or other code-bases, etc.) in clearly visible doc-strings near the relevant code.</p></li>
+<li><p>Correct and improve doc-strings wherever possible. Keep comments and doc-strings short.</p></li>
+<li><p>Avoid adding comments about future actions.</p></li>
+<li><p>Never add commented-out code to the code base. You need a <em>very</em> good reason to do this.</p></li>
+</ul>
+</section>
+<section id="formatting-and-linting-your-code">
+<span id="format-lint"></span><h3>Formatting and Linting your Code<a class="headerlink" href="#formatting-and-linting-your-code" title="Link to this heading">¶</a></h3>
+<section id="python">
+<h4>Python<a class="headerlink" href="#python" title="Link to this heading">¶</a></h4>
+<p>For Python, we use <a class="reference external" href="https://docs.astral.sh/ruff/">ruff</a> for formatting and linting. Ruff checks
+are something like the combination of several Python linters (Flake8, isort, pydocstyle etc.) and
+the black formatter. We obey the default settings of ruff and these are automatically enforced for
+you if you use our pre-commit hooks (see below).</p>
+</section>
+<section id="c">
+<h4>C++<a class="headerlink" href="#c" title="Link to this heading">¶</a></h4>
+<dl>
+<dt>For C++, we obey the Google C++ Style Guide with:</dt><dd><div class="line-block">
+<div class="line">IndentWidth: 2</div>
+<div class="line">TabWidth: 2</div>
+<div class="line">UseTab: Never</div>
+<div class="line">ColumnLimit: 100</div>
+</div>
+</dd>
+</dl>
+<p>We recommend to enforce these rules with the <a class="reference external" href="https://clang.llvm.org/docs/ClangFormat.html">ClangFormat</a>
+tool, which can be integrated in several text/code editors (e.g. Vim, Emacs, VSCode, …).</p>
+</section>
+</section>
+<section id="pre-commit">
+<span id="id1"></span><h3>Pre-Commit<a class="headerlink" href="#pre-commit" title="Link to this heading">¶</a></h3>
+<p>We use pre-commit to check our code for simple issues before submission to code review, such as
+before pushing to a GitHub repository. Pull requests that fail our pre-commit checks will fail
+in our continuous integration, therefore, you must use pre-commit too if you want to contribute
+to this code base.</p>
+<p>Pre-Commit has “hooks” which can be used for a vast range of measures to ensure you follow good
+coding practices. For example, we use pre-commit to find and correct mistakes such as missing
+semicolons, trailing whitespaces, bad indentations etc., and to ensure we conform to
+our chosen code style guide.</p>
+<p>To use our pre-commit hooks, first load your environment with pre-commit installed
+(see e.g. <a class="reference internal" href="getstart.html#getstart"><span class="std std-ref">Getting Started</span></a>), then install the pre-commit hooks, with <code class="docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code>, e.g.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>uv<span class="w"> </span>run<span class="w"> </span>pre-commit<span class="w"> </span>install
+</pre></div>
+</div>
+<p>Pre-commit should then run automatically upon <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">commit</span></code>.</p>
+<p>You can learn more by checking out <a class="reference external" href="https://pre-commit.com/">pre-commit</a>’s comprehensive
+documentation.</p>
+</section>
+<section id="commit-specification">
+<span id="conventional-commits"></span><h3>Commit Specification<a class="headerlink" href="#commit-specification" title="Link to this heading">¶</a></h3>
+<p>We use <a class="reference external" href="https://www.conventionalcommits.org/">conventional commits</a> as a a lightweight convention
+on top of commit messages to ensure they are meaningful, provide a useful history and can be used
+by automated versioning tools such as <a class="reference external" href="https://github.com/cocogitto/cocogitto">Cocogitto</a>.</p>
+<p>In short, all your commits must be structured as follows:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">&lt;type&gt;[optional scope]: &lt;description&gt;</span>
+
+<span class="go">[optional body]</span>
+
+<span class="go">[optional footer(s)]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">&lt;type&gt;</span></code> may be <code class="docutils literal notranslate"><span class="pre">fix:</span></code>, <code class="docutils literal notranslate"><span class="pre">feat:</span></code>, <code class="docutils literal notranslate"><span class="pre">refactor:</span></code>, <code class="docutils literal notranslate"><span class="pre">chore:</span></code>,  <code class="docutils literal notranslate"><span class="pre">ci:</span></code>, <code class="docutils literal notranslate"><span class="pre">test:</span></code>,  <code class="docutils literal notranslate"><span class="pre">perf:</span></code>, …
+(see <a class="reference external" href="https://www.conventionalcommits.org/">conventional commits</a> for more options).</p></li>
+<li><p>A breaking change must be marked with a footer <code class="docutils literal notranslate"><span class="pre">BREAKING</span> <span class="pre">CHANGE:</span> <span class="pre">&lt;description&gt;</span></code> and/or a <code class="docutils literal notranslate"><span class="pre">!</span></code> after
+the type/scope.</p></li>
+<li><p>AI generated commits must be marked with a footer: <code class="docutils literal notranslate"><span class="pre">generated</span> <span class="pre">with</span> <span class="pre">&lt;AI</span> <span class="pre">model&gt;</span></code>.</p></li>
+</ul>
+</section>
+<section id="unit-tests">
+<span id="id5"></span><h3>Unit Tests<a class="headerlink" href="#unit-tests" title="Link to this heading">¶</a></h3>
+<p>More on this comming soon!</p>
+</section>
+<section id="contributing-to-the-documentation">
+<span id="contrib-our-docs"></span><h3>Contributing to the Documentation<a class="headerlink" href="#contributing-to-the-documentation" title="Link to this heading">¶</a></h3>
+<p>Your PR <em>must</em> also update the docs if your code contribution requires new documentation or
+corrections to the existing documentation. If you do not believe your PR should update the
+docs, you will need to explain why compellingly in your PR description.</p>
+<p>You can see <a class="reference internal" href="ourdocs.html"><span class="doc">the documentation on the docs</span></a> for instructions how to locally
+build the documentation. This enables you to visualise, as if it were published, the documentation
+you edit.</p>
+</section>
+</section>
 </section>
 
         </article>
@@ -289,8 +422,43 @@ We welcome your interest.</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Contributing</a><ul>
+<li><a class="reference internal" href="#contributing-guidelines"><strong>Contributing Guidelines</strong></a><ul>
+<li><a class="reference internal" href="#how-to-contribute">How to Contribute?</a><ul>
+<li><a class="reference internal" href="#the-rules-on-pull-requests">The Rules on Pull Requests</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#general-coding-rules">General Coding Rules</a></li>
+<li><a class="reference internal" href="#formatting-and-linting-your-code">Formatting and Linting your Code</a><ul>
+<li><a class="reference internal" href="#python">Python</a></li>
+<li><a class="reference internal" href="#c">C++</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#pre-commit">Pre-Commit</a></li>
+<li><a class="reference internal" href="#commit-specification">Commit Specification</a></li>
+<li><a class="reference internal" href="#unit-tests">Unit Tests</a></li>
+<li><a class="reference internal" href="#contributing-to-the-documentation">Contributing to the Documentation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
@@ -300,6 +468,6 @@ We welcome your interest.</p>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
-    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/copybutton.js?v=35a8b989"></script>
     </body>
 </html>
