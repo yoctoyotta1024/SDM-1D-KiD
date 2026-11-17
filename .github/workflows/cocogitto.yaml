@@ -1,0 +1,59 @@
+name: cocogitto and uv checks
+
+on: [push]
+
+jobs:
+  cog_uv_check_job:
+    runs-on: ubuntu-latest
+    name: Check commits and uv.lock file
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v3
+
+      - name: conventional commits compliance check with cocogitto
+        uses: oknozor/cocogitto-action@v3
+        with:
+          check-latest-tag-only: true
+          git-user: 'yoctoyotta1024'
+          git-user-email: 'yoctoyotta1024@yahoo.com'
+
+      - name: uv.lock file check against pyproject.toml
+        run: |
+          uv lock --check
+
+  release:
+    needs: ["cog_uv_check_job"]
+    # Only release new version when merging into `origin/main` of yoctoyotta1024's SDM-1D-KiD repo.`
+    if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'yoctoyotta1024/SDM-1D-KiD'"
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    name: Perform semantic versioning release
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: semver release with cocogitto
+        uses: oknozor/cocogitto-action@v3
+        id: release
+        with:
+          release: true
+          check-latest-tag-only: true
+          git-user: 'yoctoyotta1024'
+          git-user-email: 'yoctoyotta1024@yahoo.com'
+
+      # The version number is accessible as a github action output
+      - name: print version
+        run: "echo '${{ steps.release.outputs.version }}'"
+
+      - name: generate changelog
+        run: cog changelog --at ${{ steps.release.outputs.version }} -t remote > GITHUB_CHANGELOG.md
+
+      - name: upload github release
+        uses: softprops/action-gh-release@v3
+        with:
+          body_path: GITHUB_CHANGELOG.md
+          tag_name: ${{ steps.release.outputs.version }}
