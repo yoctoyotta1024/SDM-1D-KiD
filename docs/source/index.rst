@@ -10,12 +10,11 @@ Welcome to the docs for SDM-1D-KiD!
    to the on-going code development. If you have queries related to
    this or if there is anything you wish to report please please :ref:`contact us! <contact>`.
 
-To (locally) reproduce this project, simply clone the repository. You will need to run
-``pre-commit install`` but other than that all the necessary packages for you to run & have fun with
-everything should work out of the box... If not, please raise an issue on the
-GitHub repository.
-
 Time to get involved! Check out the :doc:`getting started page<usage/getstart>`.
+
+Questions?
+----------
+Yes please! Simply :ref:`contact us! <contact>`
 
 Contents
 --------
@@ -30,10 +29,6 @@ Contents
    usage/contributing
    usage/contact
    references
-
-Questions?
-----------
-Yes please! Simply :ref:`contact us! <contact>`
 
 Indices and tables
 ------------------
