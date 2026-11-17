@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.2.0](https://github.com/yoctoyotta1024/SDM-1D-KiD/compare/8bf362d7915b41717c034e858f6287058e9341b6..v0.2.0) - 2026-11-17
+#### Documentation
+- update get-started and contributing guidelines - ([553b803](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/553b803290ce3aae5069b2a6038964df3640ef35)) - clara.bayley
+#### Features
+- add clang-format to base repo - ([8bf362d](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/8bf362d7915b41717c034e858f6287058e9341b6)) - clara.bayley
+#### Performance Improvements
+- missing space in readme - ([fec2f24](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/fec2f244cdefdac1f3bf286039346376a8612231)) - clara.bayley
+
+- - -
+
 ## [v0.1.0](https://github.com/yoctoyotta1024/SDM-1D-KiD/compare/23821afcbd4ac0755e7df2e2b9681861083eaaf8..v0.1.0) - 2026-11-17
 #### Features
 - add basic repository boiler plate - ([fec1448](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/fec1448b75dceb6a1d3a9cee2b0d2126c3a81fe3)) - clara.bayley
