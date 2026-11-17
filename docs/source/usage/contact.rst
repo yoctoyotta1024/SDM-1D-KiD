@@ -10,5 +10,7 @@ GitHub: `create GitHub issue <https://github.com/yoctoyotta1024/SDM-1D-KiD/issue
 Max Planck Institut Für Meteorologie
 ------------------------------------
 Email: clara.bayley@mpimet.mpg.de
+
 Email: sylwester.arabas@agh.edu.pl
+
 Email: ecware@ucdavis.edu

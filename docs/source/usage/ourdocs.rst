@@ -18,19 +18,18 @@ which you can then view in your preferred browser e.g.
 
   $ open build/html/index.html
 
-Sphinx
-------
-https://www.sphinx-doc.org/en/master/
 
-Breathe
--------
-https://breathe.readthedocs.io/en/latest/
+More Resources
+---------------
 
-Doxygen
--------
-https://www.doxygen.nl
+Sphinx: https://www.sphinx-doc.org/en/master/
 
-Contributing to Our Documentation
----------------------------------
-If you would like to contribute to the documentation, have questions or would like clarification or
+Breathe: https://breathe.readthedocs.io/en/latest/
+
+Doxygen: https://www.doxygen.nl
+
+
+Need More Documentation?
+---------------------------
+If you would like to contribute to the documentation, pl, have questions or would like clarification or
 more detail on a particular topic, please :ref:`contact us! <contact>`.
