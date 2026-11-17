@@ -1,9 +1,9 @@
 {
-    "index": 0.015,
-    "references": 0.002,
-    "usage/contact": 0.002,
-    "usage/contributing": 0.019,
-    "usage/getstart": 0.006,
-    "usage/ourdocs": 0.003,
-    "usage/requirements": 0.009
+    "index": 0.008,
+    "references": 0.001,
+    "usage/contact": 0.001,
+    "usage/contributing": 0.01,
+    "usage/getstart": 0.003,
+    "usage/ourdocs": 0.001,
+    "usage/requirements": 0.005
 }
