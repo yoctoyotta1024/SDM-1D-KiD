@@ -1,0 +1,125 @@
+name: build and run Cleo 1-D KiD
+
+on: pull_request
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache YAXT
+        id: cache_yaxt
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/yaxt/
+          key: ${{ runner.os }}-yaxt-cache-v0.12.1
+          restore-keys: |
+            ${{ runner.os }}-yaxt-
+
+      - name: Cache YAC
+        id: cache_yac
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/yac/
+          key: ${{ runner.os }}-yac-cache-v3.20.2
+          restore-keys: |
+            ${{ runner.os }}-yac-
+
+      - name: Install Software Dependencies
+        if: steps.cache_yaxt.outputs.cache-hit != 'true' || steps.cache_yac.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          cmake libopenmpi-dev openmpi-bin \
+          libnetcdff-dev liblapack-dev libfyaml-dev \
+          python3-dev python3-numpy python3-mpi4py python3-pip curl
+          apt list --installed
+
+      - name: Build YAXT
+        if: steps.cache_yaxt.outputs.cache-hit != 'true'
+        run: |
+          mkdir yaxt-0.12.1 && cd yaxt-0.12.1
+          curl -s -L "https://mpimet.files.academiccloud.de/s/NGgBGjDKkTyJonk/download?path=%2F&files=yaxt-gitlab-release-0.12.1.tar.gz" | tar xvz --strip-components=1
+          ./configure --without-regard-for-quality --without-example-programs \
+            --without-perf-programs --with-pic --prefix=${{ runner.temp }}/yaxt
+          make -j 4
+          make install
+
+      - name: Build YAC
+        if: steps.cache_yac.outputs.cache-hit != 'true'
+        run: |
+          mkdir yac-v3.20.2 && cd yac-v3.20.2
+          curl -s -L "https://mpimet.files.academiccloud.de/s/NGgBGjDKkTyJonk/download?path=%2F&files=yac-v3.20.2.tar.gz" | tar xvz --strip-components=1
+          ./configure CFLAGS="-fPIC" CC=mpicc FC=mpif90 --disable-mpi-checks \
+            --with-yaxt-root=${{ runner.temp }}/yaxt --prefix=${{ runner.temp }}/yac
+          make -j 4
+          make install
+
+  build_bindings:
+    runs-on: ubuntu-latest
+    needs: setup
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Software Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+          cmake libopenmpi-dev openmpi-bin \
+          libnetcdff-dev liblapack-dev libfyaml-dev \
+          python3-dev python3-numpy python3-mpi4py python3-pip curl
+          apt list --installed
+
+      - name: Initialise Conda/Mamba
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: sdm1dkid
+          auto-activate-base: false
+          use-mamba: true
+          miniforge-version: 'latest'
+          conda-remove-defaults: true
+
+      - name: Update Mamba Environment
+        run: |
+          mamba env update -n sdm1dkid -f environment.yaml
+
+      - name: Mamba and Python Info
+        run: |
+          mamba info
+          mamba list
+          which python
+          python --version
+
+      - name: Restore YAXT Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/yaxt/
+          key: ${{ runner.os }}-yaxt-cache-v0.12.1
+
+      - name: Restore YAC Cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/yac/
+          key: ${{ runner.os }}-yac-cache-v3.20.2
+
+      - name: Build and Compile Cleo python bindings
+        run: |
+          which python
+          python_path=$(which python)
+          pwd && ls
+          path2source="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD"
+          path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
+          ./scripts/bash/compile_cleo_python_bindings.sh \
+            "vanilla" \
+            ${path2source} \
+            ${path2build} \
+            ${python_path} \
+            ${{ runner.temp }}
+          echo "compilation of bindings complete: " && ls ${path2build}/_deps/cleo-build/cleo_python_bindings/
+          echo "current directory:" && pwd

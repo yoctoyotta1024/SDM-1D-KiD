@@ -23,6 +23,7 @@ Contents
 
    usage/getstart
    usage/requirements
+   runkid/runkid
 
    GitHub Repo <https://github.com/yoctoyotta1024/SDM-1D-KiD.git>
    usage/ourdocs
