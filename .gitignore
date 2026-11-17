@@ -1,0 +1,17 @@
+*.log
+*.png
+*.dat
+*.out
+*.ipynb
+*.gif
+*.tar.gz
+*.patch
+
+.vscode
+.ipynb_checkpoints
+.DS_Store
+__pycache__
+
+build*/
+plots*/
+roughpaper*/

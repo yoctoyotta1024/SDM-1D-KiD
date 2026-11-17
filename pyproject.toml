@@ -1,0 +1,80 @@
+[project]
+name = "sdm-1d-kid"
+description = "Python project for running superdroplet models coupled to a Pythonic 1-D KiD Driver"
+dynamic = ["version"]
+authors = [
+    { name = "Clara Bayley", email = "yoctoyotta1024@yahoo.com" },
+    { name = "Emma Ware", email = "ecware@ucdavis.edu" },
+    { name = "Sylwester Arabas", email = "sylwester.arabas@agh.edu.pl" },
+]
+readme = "README.md"
+repository = "https://github.com/yoctoyotta1024/SDM-1D-KiD"
+license = "BSD-3-Clause"
+license-files = ["LICENSE.md"]
+requires-python = ">=3.13,<3.14"
+
+dependencies = [
+  "awkward",
+  "cleopy",
+  "dask",
+  "numba",
+  "numdifftools",
+  "numpy",
+  "matplotlib",
+  "metpy",
+  "mpi4py",
+  "openmpi",
+  "PyMPDATA",
+  "PyMPDATA-examples",
+  "pysdm",
+  "ruamel.yaml",
+	"scipy",
+  "xarray",
+  "zarr",
+]
+
+[dependency-groups]
+dev = [
+  {include-group = "pre-commit"},
+  {include-group = "test"},
+  {include-group = "docs"},
+]
+pre-commit = [
+    "pre-commit",
+]
+test = [
+    "pytest",
+]
+docs = [
+    "breathe",
+    "furo",
+    "sphinx",
+    "sphinx-design",
+    "sphinx_copybutton",
+    "sphinxcontrib-applehelp",
+    "sphinxcontrib-bibtex",
+    "sphinxcontrib-htmlhelp",
+]
+
+[project.urls]
+Homepage = "https://github.com/yoctoyotta1024/SDM-1D-KiD"
+Website = "https://yoctoyotta1024.github.io/SDM-1D-KiD"
+Issues = "https://github.com/yoctoyotta1024/SDM-1D-KiD/issues"
+
+[project.scripts]
+sdm-1d-kid = "sdm_1d_kid:main"
+
+[tool.pytest.ini_options]
+pythonpath=[
+  ".", "sdm1dkid"
+]
+
+[build-system]
+requires=["hatchling >= 1.26", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.uv-dynamic-versioning]
+fallback-version = "0.0.0"

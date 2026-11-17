@@ -1,0 +1,6 @@
+name: sdm1dkid
+channels:
+    - conda-forge
+dependencies:
+    - doxygen>=1.10.0
+    - uv
