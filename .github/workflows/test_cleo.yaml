@@ -33,8 +33,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
           cmake libopenmpi-dev openmpi-bin \
-          libnetcdff-dev liblapack-dev libfyaml-dev \
-          python3-dev python3-numpy python3-mpi4py python3-pip curl
+          libnetcdff-dev liblapack-dev libfyaml-dev curl
           apt list --installed
 
       - name: Build YAXT
@@ -72,8 +71,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
           cmake libopenmpi-dev openmpi-bin \
-          libnetcdff-dev liblapack-dev libfyaml-dev \
-          python3-dev python3-numpy python3-mpi4py python3-pip curl
+          libnetcdff-dev liblapack-dev libfyaml-dev curl
           apt list --installed
 
       - name: Initialise Conda/Mamba
@@ -89,12 +87,13 @@ jobs:
         run: |
           mamba env update -n sdm1dkid -f environment.yaml
 
-      - name: Mamba and Python Info
+      - name: Environment Info
         run: |
           mamba info
           mamba list
-          which python
-          python --version
+          which uv && uv --version
+          uv sync --locked
+          uv run which python && uv run python --version
 
       - name: Restore YAXT Cache
         uses: actions/cache@v4
@@ -110,8 +109,8 @@ jobs:
 
       - name: Build and Compile Cleo python bindings
         run: |
-          which python
-          python_path=$(which python)
+          uv run which python
+          python_path=$(uv run which python)
           pwd && ls
           path2source="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD"
           path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
@@ -123,3 +122,9 @@ jobs:
             ${{ runner.temp }}
           echo "compilation of bindings complete: " && ls ${path2build}/_deps/cleo-build/cleo_python_bindings/
           echo "current directory:" && pwd
+
+      - name: Generate Cleo Initial Conditions
+        run: |
+          pwd && uv run which python
+          path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
+          uv run python ./scripts/run_cleo.py ${path2build} --do_inputfiles

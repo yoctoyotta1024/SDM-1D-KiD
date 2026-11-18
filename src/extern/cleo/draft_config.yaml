@@ -1,0 +1,101 @@
+# ----- CLEO -----
+# File: draft_config.yaml
+# Project: config
+# Created Date: Wednesday 18th November 2026
+# Author: Clara Bayley (CB)
+# Additional Contributors:
+# -----
+# License: BSD 3-Clause "New" or "Revised" License
+# https://opensource.org/licenses/BSD-3-Clause
+# -----
+# Copyright (c) 2023 MPI-M, Clara Bayley
+# -----
+# File Description:
+# Draft configuration file for CLEO SDM coupled to a Pythonic dynamics driver.
+# Note: A real configuration file, the initial superdroplets data ("initsupers_filename"), and
+# the grid data ("grid_filename"), can be made with the ./src/sdm_1d_kid/cleo/inputfiles.py
+# script using cleopy modules.
+#
+
+### Superdroplet Initialisation Parameters ###
+generate_inputfiles:
+  grid_geometry:
+    zmin: XXX                                   # minimum z-coord of domain [m]
+    zmax: XXX                                   # maximum z-coord of domain [m]
+    zdelta: XXX                                 # z-spacing of gridboxes in domain [m]
+  superdroplet_initialisation:
+    geomean : 4.0e-8                            # geometric mean radius of initial droplet spectrum [m]
+    geosig : 1.4                                # geometric standard deviation of initial droplet spectrum
+    numconc : XXX                               # number conc. of initial droplet spectrum [m^-3]
+    nsupers_pergbx: XXX                         # no. of super-droplets per gridbox to initialise
+    alpha: XXX                                  # sampling param: 0 -> const xi, 1 -> xi follows spectrum
+
+### SDM Runtime Parameters ###
+domain:
+  nspacedims : 1                                # no. of spatial dimensions to model
+  ngbxs : XXX                                   # total number of Gbxs
+  maxnsupers: XXX                               # maximum number of SDs
+
+timesteps:
+  CONDTSTEP : XXX                               # time between SD condensation [s]
+  COLLTSTEP : XXX                               # time between SD collision [s]
+  MOTIONTSTEP : XXX                             # time between SDM motion [s]
+  COUPLTSTEP : XXX                              # time between dynamic couplings [s]
+  OBSTSTEP : XXX                                # time between SDM observations [s]
+  T_END : XXX                                  # time span of integration from 0s to T_END [s]
+
+### Initialisation Parameters ###
+inputfiles:
+  constants_filename : /path/to/cleoconstants.hpp         # path to Cleo .hpp file for values of physical constants
+  grid_filename : /path/to/dimlessGBxboundaries.dat       # path to binary file for initialisation of grid-box maps
+
+initsupers:
+  type: frombinary                                        # type of initialisation of super-droplets
+  initsupers_filename : /path/to/dimlessSDsinit.dat       # path to binary filename for initialisation of SDs
+  initnsupers: XXX                                        # initial no. of super-droplets to initialise
+
+### Output Parameters ###
+outputdata:
+  setup_filename : /path/to/setup.txt                     # path for .txt filen to copy configuration to
+  zarrbasedir : /path/to/sol.zarr                         # path for Zarr store base directory
+  maxchunk : 2500000                                      # maximum no. of elements in chunks of zarr store array
+
+### Microphysics Parameters ###
+microphysics:
+  condensation:
+    do_alter_thermo : true                      # true = cond/evap alters the thermodynamic state
+    maxniters : 50                              # maximum no. iterations of Newton Raphson Method
+    MINSUBTSTEP : 0.0005                        # minimum subtimestep in cases of substepping [s]
+    rtol : 0.0                                  # relative tolerance for implicit Euler integration
+    atol : 0.001                                # absolute tolerance for implicit Euler integration
+
+### Bounday Conditions Parameters ###
+boundary_conditions:
+  type: addsuperstodomain
+  LOWER_COORD3LIM: 0                            # SDs added to domain with coord3 < LOWER_COORD3LIM [m]
+  UPPER_COORD3LIM: 3200                         # SDs added to domain with coord3 >= UPPER_COORD3LIM [m]
+  newnsupers: XXX                               # number SDs to add to each gridbox below/above LOWER/UPPER_COORD3LIM
+  DRYRADIUS: 1.0                                # max dry radius of new super-droplets (for solute mass) [m]
+  MINRADIUS: 1.0e-8                             # minimum radius of new super-droplets [m]
+  MAXRADIUS: 1.5e-7                             # maximum radius of new super-droplets [m]
+  NUMCONC_a: XXX                                # number conc. of 1st droplet lognormal dist [m^-3]
+  GEOMEAN_a: 4.0e-8                             # geometric mean radius of 1st lognormal dist [m]
+  geosigma_a: 1.4                               # geometric standard deviation of 1st lognormal dist
+  NUMCONC_b: 0.0                                # number conc. of 2nd droplet lognormal dist [m^-3]
+  GEOMEAN_b: 4.0e-8                             # geometric mean radius of 2nd lognormal dist [m]
+  geosigma_b: 1.4                               # geometric standard deviation of 2nd lognormal dist
+
+### CLEO Python Bindings Parameters ###
+python_bindings:
+  enable_terminal_velocity : XXX                  # true enables terminal velocity in superdroplet motion
+  enable_condensation : XXX                       # true enables condensation in microphysics
+  enable_collisions : XXX                         # true enables collisions in microphysics
+  enable_observers:                               # true for the following set enables various observers
+      time : true
+      gbxindex : true                             # Note: currently gbxindex observer *must* be "true"
+      totnsupers : true
+      massmoms : true
+      rainmassmoms : true
+      gridboxes : true
+      superdrops : true
+      precip : true
