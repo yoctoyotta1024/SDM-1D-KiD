@@ -127,4 +127,4 @@ jobs:
         run: |
           pwd && uv run which python
           path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
-          uv run python ./scripts/run_cleo.py ${path2build} --do_inputfiles
+          uv run python ./scripts/run_cleo.py ${path2build} "ci_test" 2 --do_inputfiles

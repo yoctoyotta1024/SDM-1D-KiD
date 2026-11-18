@@ -17,6 +17,12 @@
 # script using cleopy modules.
 #
 
+### Ensemble of Runs Setup ###
+run_ensemble:
+  ensemble_name: XXX                           # name of ensemble of runs
+  ensemble_size: XXX                           # number of runs in ensemble
+  run_name: XXX                                # name of this run in the ensemble
+
 ### Superdroplet Initialisation Parameters ###
 generate_inputfiles:
   grid_geometry:

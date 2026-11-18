@@ -42,8 +42,9 @@ Running Cleo
 -------------
 
 The script ``scripts/run_cleo.py`` can be used to run the entire workflow for
-the Cleo 1-D KiD. It assumes you have already compiled Cleo's python bindings
-and it consists of 4 stages:
+an ensemble of runs of the Cleo 1-D KiD. It assumes you have already
+compiled Cleo's python bindings and for each member of the ensemble,
+it consists of 4 stages:
 
 1. :ref:`generating inputfiles<do_inputfiles>`
 2. :ref:`running, i.e. time-stepping, the Cleo 1-D KiD model<do_run_model>`
@@ -51,12 +52,12 @@ and it consists of 4 stages:
 4. :ref:`plotting "quicklooks" of the post-processed results<do_plot_results>`
 
 Each stage can be turned on (the default is off) by calling ``run_cleo.py``
-with the associated flag for that stage, e.g. to run all the stages
-you would do:
+with the associated flag for that stage, e.g. to run all the stages for
+an ensemble called "your_ensemble" consisting of 3 runs you would do:
 
 .. code-block:: console
 
-  $  uv run python ./scripts/run_cleo.py /path/to/your/build \
+  $  uv run python ./scripts/run_cleo.py /path/to/your/build "your_ensemble" 3 \
       --do_inputfiles --do_run_model --do_post_process --do_plot_results
 
 The following sections describe each stage in a bit more detail.
@@ -67,14 +68,14 @@ The following sections describe each stage in a bit more detail.
 Generating Inputfiles
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-To generate the input files to run Cleo call:
+To generate the input files for Cleo for each run in your ensemble, call:
 
 .. code-block:: console
 
-  $  uv run python ./scripts/run_cleo.py /path/to/your/build --do_inputfiles
+  $  uv run python ./scripts/run_cleo.py /path/to/your/build "your_ensemble" 3 --do_inputfiles
 
 
-This will generate three files:
+This will generate three files for each run:
 * the configuration file,
 * the grid file,
 * the superdroplet initial conditions file.
@@ -83,11 +84,12 @@ The function ``inputfiles`` in ``run_cleo.py`` contains all the settings
 you may want to configure yourself. You can also have a look at the source
 it calls, ``src/sdm_1d_kid/cleo/generate_inputfiles.py``, for more details.
 
-By default, this script will generate the configuration file for your
-setup in ``/path/to/your/build/tmp/``, and the grid and superdroplet
-initial conditions files in ``/path/to/your/build/share/``. It will also plot
-some figures about the grid and superdroplet initial conditions in
-``/path/to/your/build/bin/``.
+By default, for an ensemble called "your_ensemble", this script will generate the
+configuration file for your setup in ``/path/to/your/build/your_ensemble/tmp/``,
+and the grid and superdroplet initial conditions files in
+``/path/to/your/build/your_ensemble/share/``. It will also plot some figures
+about the grid and superdroplet initial conditions in
+``/path/to/your/build/your_ensemble/bin/``.
 
 
 .. _do_run_model:
