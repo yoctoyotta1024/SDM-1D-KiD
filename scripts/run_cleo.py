@@ -77,7 +77,9 @@ def make_directories(path2ensemble, tmppath, sharepath, binpath, savefigpath=Non
 
 
 # %% ----------------------- MAIN FUNCTION DEFINITIONS ----------------------- #
-def inputfiles(path2build, path2ensemble, ensemble_name, ensemble_size):
+def inputfiles(
+    path2build, tmppath, sharepath, binpath, savefigpath, ensemble_name, ensemble_size
+):
     from pathlib import Path
 
     import numpy as np
@@ -90,10 +92,6 @@ def inputfiles(path2build, path2ensemble, ensemble_name, ensemble_size):
     gen_supers = True
 
     ### directories and filenames for ensemble
-    tmppath = path2ensemble / "tmp"
-    sharepath = path2ensemble / "share"
-    binpath = path2ensemble / "bin"
-    savefigpath = binpath
     constants_filename = (
         path2build / "_deps" / "cleo-src" / "libs" / "cleoconstants.hpp"
     )
@@ -183,9 +181,6 @@ def inputfiles(path2build, path2ensemble, ensemble_name, ensemble_size):
             "enable_condensation": enable_condensation,
             "enable_collisions": enable_collisions,
         }
-        make_directories(
-            path2ensemble, tmppath, sharepath, binpath, savefigpath=savefigpath
-        )
         generate_inputfiles.main(
             config_filename,
             gen_config=gen_config,
@@ -203,6 +198,28 @@ def inputfiles(path2build, path2ensemble, ensemble_name, ensemble_size):
         gen_gbxs = False  # only need one grid file for whole ensemble of runs
 
 
+def run_model(path2build, tmppath):
+    import glob
+    import os
+
+    from sdm_1d_kid.cleo import run
+
+    ### export path to cleo_python_bindings as environment variable
+    path2cleo_python_bindings = (
+        path2build / "_deps" / "cleo-build" / "cleo_python_bindings"
+    )
+    os.environ["CLEO_PYTHON_BINDINGS"] = str(path2cleo_python_bindings)
+
+    config_files = glob.glob(os.path.join(tmppath, "*.yaml"))
+    if not config_files:
+        raise ValueError(
+            f"Cannot run Cleo: no configuration files found in search for {tmppath}/*.yaml"
+        )
+    else:
+        for config_filename in config_files:
+            run.main(config_filename)
+
+
 # %% ----------------------------- MAIN PROGRAM ------------------------------ #
 def main():
     ### --- SCRIPT INPUT PARAMETERS --- ###
@@ -215,15 +232,31 @@ def main():
     ensemble_name = args.ensemble_name
     ensemble_size = args.ensemble_size
 
+    ### directories for specific ensemble
     path2ensemble = path2build / ensemble_name
+    tmppath = path2ensemble / "tmp"
+    sharepath = path2ensemble / "share"
+    binpath = path2ensemble / "bin"
+    savefigpath = binpath
 
     if do_inputfiles:
         logger.info("generating inputfiles")
-        inputfiles(path2build, path2ensemble, ensemble_name, ensemble_size)
+        make_directories(
+            path2ensemble, tmppath, sharepath, binpath, savefigpath=savefigpath
+        )
+        inputfiles(
+            path2build,
+            tmppath,
+            sharepath,
+            binpath,
+            savefigpath,
+            ensemble_name,
+            ensemble_size,
+        )
 
     if do_run_model:
         logger.info("running Cleo 1-D KiD model")
-        # run_model() ###WIP
+        run_model(path2build, tmppath)
 
     if do_post_process:
         logger.info("post-processing Cleo 1-D KiD output")
