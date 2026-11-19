@@ -10,3 +10,4 @@ Next Up
    :maxdepth: 1
 
    cleo
+   bulk_scheme

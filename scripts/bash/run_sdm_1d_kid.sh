@@ -35,6 +35,11 @@ cleo_ensemble_name="testing"
 cleo_ensemble_size=2
 ### ---------------------------------------------------- ###
 
+### ------- extra run parameters for bulk scheme ------- ###
+bulk_ensemble_name="testing"
+bulk_ensemble_size=2
+### ---------------------------------------------------- ###
+
 ### ---------------------------------------------------- ###
 ### ---------------------------------------------------- ###
 ### ---------------------------------------------------- ###
@@ -65,8 +70,15 @@ echo "run flags=${run_flags}"
 echo "SDM 1-D KiD directory=${path2sdm1dkid}"
 echo "build directory=${path2build}"
 
-echo "Cleo ensemble name=${cleo_ensemble_name}"
-echo "Cleo ensemble size=${cleo_ensemble_size}"
+if [[ "${model}" == "cleo" ]]; then
+  echo "Cleo ensemble name=${cleo_ensemble_name}"
+  echo "Cleo ensemble size=${cleo_ensemble_size}"
+fi
+
+if [[ "${model}" == "bulk" ]]; then
+  echo "Bulk ensemble name=${bulk_ensemble_name}"
+  echo "Bulk ensemble size=${bulk_ensemble_size}"
+fi
 echo "### ------------------------------------------- ###"
 ### ---------------------------------------------------- ###
 
@@ -76,6 +88,18 @@ if [[ "${model}" == "cleo" ]]; then
     ${path2build} \
     ${cleo_ensemble_name} \
     ${cleo_ensemble_size} \
+    ${run_flags}"
+  echo ${cmd}
+  eval ${cmd}
+fi
+### ---------------------------------------------------- ###
+
+### --------------- run bulk scheme 1-D KiD ------------ ###
+if [[ "${model}" == "bulk" ]]; then
+  cmd="${python} ${path2sdm1dkid}/scripts/run_bulk_scheme.py \
+    ${path2build} \
+    ${bulk_ensemble_name} \
+    ${bulk_ensemble_size} \
     ${run_flags}"
   echo ${cmd}
   eval ${cmd}

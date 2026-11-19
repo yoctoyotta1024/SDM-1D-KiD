@@ -38,7 +38,7 @@ E.g. on Levante:
 .. code-block:: console
 
   $ ./scripts/bash/compile_cleo_python_bindings.sh levante ./ ./build \
-      $(uv run which python) /work/mh0731/m300950/yacyaxt/gcc/
+      $(uv run which python) /work/mh0731/m300950/yacyaxt/gcc
 
 
 After making the bindings, the ``cleo_python_bindings`` python module can used just
