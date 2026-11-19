@@ -58,7 +58,7 @@ fi
 
 ### --- set relevant compiler, packages and paths ------ ###
 source "${path2sdm1dkid}/scripts/bash/helpers/${machine}.sh"
-load_runtime_packages
+load_runtime_packages "${path2sdm1dkid}" "${path2build}"
 ### ---------------------------------------------------- ###
 
 ### ----------------- print build bindings ------------- ###
