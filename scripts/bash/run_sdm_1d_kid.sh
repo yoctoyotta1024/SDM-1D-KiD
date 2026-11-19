@@ -1,4 +1,15 @@
 #!/bin/bash
+#SBATCH --job-name=run_sdm_1d_kid
+#SBATCH --partition=compute
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem=940M
+#SBATCH --time=00:30:00
+#SBATCH --mail-user=clara.bayley@mpimet.mpg.de
+#SBATCH --mail-type=FAIL
+#SBATCH --account=mh0731
+#SBATCH --output=./build/log/run_sdm_1d_kid_out.%j.out
+#SBATCH --error=./build/log/run_sdm_1d_kid_err.%j.out
 
 ### script to launch python scripts for ensembles of runs of various 1-D KiD setups,
 ### either for Levante HPC or a generic "vanilla" computer.
@@ -41,7 +52,7 @@ fi
 ### ---------------------------------------------------- ###
 
 ### --- set relevant compiler, packages and paths ------ ###
-source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/helpers" &>/dev/null && pwd)/${machine}.sh"
+source "${path2sdm1dkid}/scripts/bash/helpers/${machine}.sh"
 load_runtime_packages
 ### ---------------------------------------------------- ###
 

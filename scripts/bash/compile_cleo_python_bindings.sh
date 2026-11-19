@@ -55,7 +55,7 @@ CLEO_KOKKOS_DEVICE_FLAGS=""
 ### ---------------------------------------------------- ###
 
 ### ---- set relevant packages and compiler settings --- ###
-source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/helpers" &>/dev/null && pwd)/${machine}.sh"
+source "${path2sdm1dkid}/scripts/bash/helpers/${machine}.sh"
 load_build_packages
 ### ---------------------------------------------------- ###
 
