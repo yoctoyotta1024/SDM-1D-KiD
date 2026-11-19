@@ -47,7 +47,7 @@ def parse_arguments():
         help="Run bulk scheme 1-D KiD",
     )
     parser.add_argument(
-        "--do_post_process",
+        "--do_postprocess",
         action="store_true",  # default is False
         help="Post-process output",
     )
@@ -117,7 +117,7 @@ def main():
     path2build = args.path2build.resolve()
     do_inputfiles = args.do_inputfiles
     do_run_model = args.do_run_model
-    do_post_process = args.do_post_process
+    do_postprocess = args.do_postprocess
     do_plot_results = args.do_plot_results
     ensemble_name = args.ensemble_name
     ensemble_size = args.ensemble_size
@@ -137,18 +137,18 @@ def main():
         )
         run_model(configs)
 
-    if do_post_process:
+    if do_postprocess:
         logger.info("post-processing bulk scheme 1-D KiD output")
-        logger.warning("there is no post-processing for the bulk scheme 1-D KiD")
+        # postprocess() ###WIP
 
     if do_plot_results:
         logger.info("plotting results of bulk scheme 1-D KiD")
-        logger.warning("there is no results plotting for the bulk scheme 1-D KiD")
+        # plot_results() ###WIP
 
     if (
         not do_inputfiles
         and not do_run_model
-        and not do_post_process
+        and not do_postprocess
         and not do_plot_results
     ):
         logger.warning("run bulk scheme called without any action")

@@ -13,7 +13,7 @@ ensemble, it consists of 4 stages:
 
 1. :ref:`generating inputfiles<do_inputfiles_bulk>`
 2. :ref:`running, i.e. time-stepping, the bulk scheme 1-D KiD model<do_run_model_bulk>`
-3. :ref:`post-processing the bulk scheme 1-D KiD output<do_post_process_bulk>`
+3. :ref:`post-processing the bulk scheme 1-D KiD output<do_postprocess_bulk>`
 4. :ref:`plotting "quicklooks" of the post-processed results<do_plot_results_bulk>`
 
 Each stage can be turned on (the default is off) by calling ``run_bulk_scheme.py``
@@ -23,7 +23,7 @@ an ensemble called "your_ensemble" consisting of 3 runs you would do:
 .. code-block:: console
 
   $ uv run python ./scripts/run_bulk_scheme.py /path/to/your/build "your_ensemble" 3 \
-      --do_inputfiles --do_run_model --do_post_process --do_plot_results
+      --do_inputfiles --do_run_model --do_postprocess --do_plot_results
 
 To make things potentially easier, you can also choose to call this script through
 the bash script ``run_sdm_1d_kid.sh``:
@@ -38,7 +38,7 @@ E.g. on Levante:
 .. code-block:: console
 
   $ ./scripts/bash/run_sdm_1d_kid.sh levante bulk \
-       "--do_inputfiles --do_run_model --do_post_process --do_plot_results" \
+       "--do_inputfiles --do_run_model --do_postprocess --do_plot_results" \
        ./ ./build $(uv run which python)
 
 The following sections describe each stage in a bit more detail.
@@ -81,7 +81,7 @@ the output (a Zarr direcotry and quickplot of the moisture evolution) for each
 run in ``/path/to/your/build/bulk_scheme/your_ensemble/bin/``.
 
 
-.. _do_post_process_bulk:
+.. _do_postprocess_bulk:
 
 Post-Processing the Output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
