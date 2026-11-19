@@ -166,6 +166,8 @@ class CleoSDM:
             self.sdm.run_step(self.t_sdm, t_sdm_next, self.gbxs, self.allsupers)
 
             if self.t_sdm % self.sdm.get_couplstep() == 0:
-                self.comms.send_dynamics(self.sdm.gbxmaps, self.gbxs, self.coupldyn)
+                self.comms.send_dynamics(
+                    self.sdm.gbxmaps, self.gbxs, self.allsupers, self.coupldyn
+                )
 
             self.t_sdm = t_sdm_next
