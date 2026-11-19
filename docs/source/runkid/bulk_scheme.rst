@@ -11,10 +11,10 @@ The script ``scripts/run_bulk_scheme.py`` can be used to run the entire workflow
 for an ensemble of runs of the bulk scheme 1-D KiD. For each member of the
 ensemble, it consists of 4 stages:
 
-1. :ref:`generating inputfiles<do_inputfiles>`
-2. :ref:`running, i.e. time-stepping, the bulk scheme 1-D KiD model<do_run_model>`
-3. :ref:`post-processing the bulk scheme 1-D KiD output<do_post_process>`
-4. :ref:`plotting "quicklooks" of the post-processed results<do_plot_results>`
+1. :ref:`generating inputfiles<do_inputfiles_bulk>`
+2. :ref:`running, i.e. time-stepping, the bulk scheme 1-D KiD model<do_run_model_bulk>`
+3. :ref:`post-processing the bulk scheme 1-D KiD output<do_post_process_bulk>`
+4. :ref:`plotting "quicklooks" of the post-processed results<do_plot_results_bulk>`
 
 Each stage can be turned on (the default is off) by calling ``run_bulk_scheme.py``
 with the associated flag for that stage, e.g. to run all the stages for
@@ -44,7 +44,7 @@ E.g. on Levante:
 The following sections describe each stage in a bit more detail.
 
 
-.. _do_inputfiles:
+.. _do_inputfiles_bulk:
 
 Generating Inputfiles
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,7 +62,7 @@ The actualy configuration of the model for each run is set in the
 ``--do_run_model`` stage, through a python dictionary.
 
 
-.. _do_run_model:
+.. _do_run_model_bulk:
 
 Running, i.e. Time-stepping, the Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,7 +80,7 @@ By default, for an ensemble called "your_ensemble", this script will generate
 the output for each run in ``/path/to/your/build/bulk_scheme/your_ensemble/bin/``.
 
 
-.. _do_post_process:
+.. _do_post_process_bulk:
 
 Post-Processing the Output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,7 +88,7 @@ Post-Processing the Output
 Currently, the bulk scheme does not write out any data so there is no
 post-processing.
 
-.. _do_plot_results:
+.. _do_plot_results_bulk:
 
 Plotting the "Quicklooks"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
