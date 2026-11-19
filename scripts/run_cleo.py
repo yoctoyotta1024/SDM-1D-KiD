@@ -201,8 +201,8 @@ def inputfiles(
 def run_model(path2build, tmppath):
     import glob
     import os
-
-    from sdm_1d_kid.cleo import run
+    import subprocess
+    import sys
 
     ### export path to cleo_python_bindings as environment variable
     path2cleo_python_bindings = (
@@ -217,7 +217,11 @@ def run_model(path2build, tmppath):
         )
     else:
         for config_filename in config_files:
-            run.main(config_filename)
+            ### equivalent to ``run.main(config_filename)`` but launches seperate OS processes
+            subprocess.run(
+                [sys.executable, "-m", "sdm_1d_kid.cleo.run", str(config_filename)],
+                check=True,
+            )
 
 
 # %% ----------------------------- MAIN PROGRAM ------------------------------ #
