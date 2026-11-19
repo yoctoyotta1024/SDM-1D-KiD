@@ -33,7 +33,7 @@ cmake_nproc=16
 
 ### ------------------ check arguments ----------------- ###
 if [[ "${machine}" != "levante" && "${machine}" != "vanilla" ]]; then
-    echo "Error: machine not recognised. Please choose either 'levante' or 'vanilla'"
+    echo "Error: ${machine} machine not recognised. Please choose either 'levante' or 'vanilla'"
     exit 1
 fi
 
@@ -61,6 +61,8 @@ load_build_packages
 
 ### ----------------- print build bindings ------------- ###
 echo "### --------------- Build Inputs -------------- ###"
+echo "machine=${machine}"
+echo "python=${python}"
 echo "source directory=${path2source}"
 echo "build directory=${path2build}"
 echo "CMAKE_CXX_COMPILER=${cxx_compiler}"
@@ -72,10 +74,13 @@ echo "CLEO_YAC_FLAGS=${CLEO_YAC_FLAGS}"
 echo "CLEO_KOKKOS_FLAGS=${CLEO_KOKKOS_BASIC_FLAGS}\
   ${CLEO_KOKKOS_HOST_FLAGS} ${CLEO_KOKKOS_DEVICE_FLAGS}"
 echo "### ------------------------------------------- ###"
+### ---------------------------------------------------- ###
 
+### ------------------- build bindings ----------------- ###
 cmake -DCMAKE_CXX_COMPILER=${cxx_compiler} \
     -DCMAKE_C_COMPILER=${c_compiler} \
     -DCMAKE_CXX_FLAGS="${cxx_flags}" \
+    -DCMAKE_BUILD_TYPE=Release \
     -S ${path2source} -B ${path2build} \
     ${CLEO_KOKKOS_BASIC_FLAGS} ${CLEO_KOKKOS_HOST_FLAGS} ${CLEO_KOKKOS_DEVICE_FLAGS} \
     ${CLEO_BUILD_FLAGS} ${CLEO_YAC_FLAGS}

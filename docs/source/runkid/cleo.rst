@@ -33,6 +33,14 @@ To build Cleo's python bindings you can simply execute the bash script
   a directory called ``yac`` and a directory called ``yaxt`` containing each
   installation respectively. (See :doc:`../usage/requirements` for more details).
 
+E.g. on Levante:
+
+.. code-block:: console
+
+  $ ./scripts/bash/compile_cleo_python_bindings.sh levante ./ ./build \
+      $(uv run which python) /work/mh0731/m300950/yacyaxt/gcc/
+
+
 After making the bindings, the ``cleo_python_bindings`` Python module can used just
 like any other ordinary Python module. By default, the bindings are built in
 ``/path/to/your/build/_deps/cleo-build/cleo_python_bindings/``.
@@ -57,8 +65,24 @@ an ensemble called "your_ensemble" consisting of 3 runs you would do:
 
 .. code-block:: console
 
-  $  uv run python ./scripts/run_cleo.py /path/to/your/build "your_ensemble" 3 \
+  $ uv run python ./scripts/run_cleo.py /path/to/your/build "your_ensemble" 3 \
       --do_inputfiles --do_run_model --do_post_process --do_plot_results
+
+To make things potentially easier, you can also choose to call this script through
+the bash script ``run_sdm_1d_kid.sh``:
+
+.. code-block:: console
+
+  $ ./scripts/bash/run_sdm_1d_kid.sh [machine] [model] [path2sdm1dkid] [path2build] [python] [run_flags]
+
+
+E.g. on Levante:
+
+.. code-block:: console
+
+  $ ./scripts/bash/run_sdm_1d_kid.sh levante cleo \
+       "--do_inputfiles --do_run_model --do_post_process --do_plot_results" \
+       ./ ./build $(uv run which python)
 
 The following sections describe each stage in a bit more detail.
 

@@ -25,7 +25,6 @@ set(CLEO_NO_PYBINDINGS OFF)
 # choose which of Cleo's optional libraries to build
 set(CLEO_DOMAIN "cartesian")
 set(CLEO_COUPLED_DYNAMICS "numpy")
-set(CLEO_CMAKE_BUILD_TYPE "Release")
 
 # fetch and make cleo library available
 include(FetchContent)
