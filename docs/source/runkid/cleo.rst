@@ -109,11 +109,11 @@ you may want to configure yourself. You can also have a look at the source
 it calls, ``src/sdm_1d_kid/cleo/generate_inputfiles.py``, for more details.
 
 By default, for an ensemble called "your_ensemble", this script will generate the
-configuration file for your setup in ``/path/to/your/build/your_ensemble/tmp/``,
+configuration file for your setup in ``/path/to/your/build/cleo/your_ensemble/tmp/``,
 and the grid and superdroplet initial conditions files in
-``/path/to/your/build/your_ensemble/share/``. It will also plot some figures
+``/path/to/your/build/cleo/your_ensemble/share/``. It will also plot some figures
 about the grid and superdroplet initial conditions in
-``/path/to/your/build/your_ensemble/bin/``.
+``/path/to/your/build/cleo/your_ensemble/bin/``.
 
 
 .. _do_run_model:

@@ -17,7 +17,8 @@ class for storing thermodynamics output during model run
 """
 
 import numpy as np
-from pympdata_1d_kid.thermo.thermodynamics import Thermodynamics
+
+from sdm_1d_kid.pympdata_driver.thermo.thermodynamics import Thermodynamics
 
 
 class OutputVariable:

@@ -14,7 +14,7 @@ https://opensource.org/licenses/BSD-3-Clause
 -----
 File Description:
 This script runs the entire workflow for the Cleo 1-D KiD (generate inputfiles,
-run model, post-process output and plot quickplots. It assumes you have already
+run model, post-process output and plot quickplots). It assumes you have already
 compiled Cleo's python bindings.
 """
 
@@ -67,7 +67,7 @@ def make_directories(path2ensemble, tmppath, sharepath, binpath, savefigpath=Non
             "path to ensemble doesn't exist, making directory and its parents"
         )
 
-    path2ensemble.mkdir(exist_ok=True)
+    path2ensemble.mkdir(exist_ok=True, parents=True)
     tmppath.mkdir(exist_ok=True, parents=False)
     sharepath.mkdir(exist_ok=True, parents=False)
     binpath.mkdir(exist_ok=True, parents=False)
@@ -233,7 +233,7 @@ def main():
     ensemble_size = args.ensemble_size
 
     ### directories for specific ensemble
-    path2ensemble = path2build / ensemble_name
+    path2ensemble = path2build / "cleo" / ensemble_name
     tmppath = path2ensemble / "tmp"
     sharepath = path2ensemble / "share"
     binpath = path2ensemble / "bin"

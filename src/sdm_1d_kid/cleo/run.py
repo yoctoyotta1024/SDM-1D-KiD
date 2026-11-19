@@ -45,6 +45,7 @@ def main(config_filename):
     from PyMPDATA_examples.Shipway_and_Hill_2012 import si
 
     from sdm_1d_kid.cleo.helpers.cleo_sdm_wrapper import CleoSDMWrapper
+    from sdm_1d_kid.pympdata_driver import perform_1dkid
     from sdm_1d_kid.pympdata_driver.thermo.thermodynamics import Thermodynamics
 
     ### --- load configuration --- ###
@@ -84,6 +85,14 @@ def main(config_filename):
     is_motion = True  # True == advect SDs according to wind fields
     advect_hydrometeors = False  # True == PyMPDATA advection (not same as Cleo(!))
 
+    run_name = cnfg["run_ensemble"]["run_name"]
+    quickplotdir = Path(
+        zarrbasedir
+    ).parent  # path for PYMPDATA quickplot of 1-D KiD run
+
+    if not quickplotdir.is_dir():
+        raise ValueError("Cannot run Cleo: directory for quickplots doesn't exist")
+
     thermo_init = Thermodynamics(
         np.zeros(ngbxs),
         np.zeros(ngbxs),
@@ -113,7 +122,19 @@ def main(config_filename):
         thermo_init.vvel,
     )
 
-    print(microphys_scheme, t_end, advect_hydrometeors)
+    ### --- run 1-D KiD with PyMPDATA and Cleo --- ###
+    perform_1dkid.main(
+        zmin,
+        zmax,
+        zdelta,
+        t_end,
+        timestep,
+        thermo_init,
+        microphys_scheme,
+        advect_hydrometeors,
+        quickplotdir,
+        run_name,
+    )
 
 
 # %% --------------------------- RUN PROGRAM --------------------------------- #
