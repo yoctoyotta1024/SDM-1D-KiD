@@ -30,8 +30,8 @@ generate_inputfiles:
     zmax: XXX                                   # maximum z-coord of domain [m]
     zdelta: XXX                                 # z-spacing of gridboxes in domain [m]
   superdroplet_initialisation:
-    geomean : 4.0e-8                            # geometric mean radius of initial droplet spectrum [m]
-    geosig : 1.4                                # geometric standard deviation of initial droplet spectrum
+    geomean : XXX                               # geometric mean radius of initial droplet spectrum [m]
+    geosig : XXX                                # geometric standard deviation of initial droplet spectrum
     numconc : XXX                               # number conc. of initial droplet spectrum [m^-3]
     nsupers_pergbx: XXX                         # no. of super-droplets per gridbox to initialise
     alpha: XXX                                  # sampling param: 0 -> const xi, 1 -> xi follows spectrum
@@ -78,15 +78,15 @@ microphysics:
 ### Bounday Conditions Parameters ###
 boundary_conditions:
   type: addsuperstodomain
-  LOWER_COORD3LIM: 0                            # SDs added to domain with coord3 < LOWER_COORD3LIM [m]
-  UPPER_COORD3LIM: 3200                         # SDs added to domain with coord3 >= UPPER_COORD3LIM [m]
+  LOWER_COORD3LIM: XXX                          # SDs added to domain with coord3 < LOWER_COORD3LIM [m]
+  UPPER_COORD3LIM: XXX                          # SDs added to domain with coord3 >= UPPER_COORD3LIM [m]
   newnsupers: XXX                               # number SDs to add to each gridbox below/above LOWER/UPPER_COORD3LIM
   DRYRADIUS: 1.0                                # max dry radius of new super-droplets (for solute mass) [m]
   MINRADIUS: 1.0e-8                             # minimum radius of new super-droplets [m]
   MAXRADIUS: 1.5e-7                             # maximum radius of new super-droplets [m]
   NUMCONC_a: XXX                                # number conc. of 1st droplet lognormal dist [m^-3]
-  GEOMEAN_a: 4.0e-8                             # geometric mean radius of 1st lognormal dist [m]
-  geosigma_a: 1.4                               # geometric standard deviation of 1st lognormal dist
+  GEOMEAN_a: XXX                                # geometric mean radius of 1st lognormal dist [m]
+  geosigma_a: XXX                               # geometric standard deviation of 1st lognormal dist
   NUMCONC_b: 0.0                                # number conc. of 2nd droplet lognormal dist [m^-3]
   GEOMEAN_b: 4.0e-8                             # geometric mean radius of 2nd lognormal dist [m]
   geosigma_b: 1.4                               # geometric standard deviation of 2nd lognormal dist

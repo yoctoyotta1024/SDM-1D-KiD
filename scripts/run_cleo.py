@@ -103,7 +103,10 @@ def inputfiles(
     zdelta = 25  # z-spacing of gridboxes in domain [m]
 
     ### superdroplet_initialisation
+    ### *(!)Note:* if changing geomean or geosig, be mindful of MINRADIUS/MAXRADIUS in config.yaml
     numconc = 50e6  # number conc. of initial droplet spectrum [m^-3]
+    geomean = 4.0e-8  # geometric mean radius of initial droplet spectrum [m]
+    geosig = 1.4  # geometric standard deviation of initial droplet spectrum
     nsupers_pergbx = 256  # no. of super-droplets per gridbox to initialise
     alpha = 0.0  # sampling param: 0 -> const xi, 1 -> xi follows spectrum
 
@@ -128,8 +131,11 @@ def inputfiles(
     maxnsupers = initnsupers * 2  # maximum number of SDs
 
     ### boundary_conditions
+    LOWER_COORD3LIM = 0  # SDs added to domain with coord3 < LOWER_COORD3LIM [m]
     newnsupers = nsupers_pergbx  # number SDs to add to each gridbox below/above LOWER/UPPER_COORD3LIM
     NUMCONC_a = numconc  # number conc. of 1st droplet lognormal dist [m^-3]
+    GEOMEAN_a = geomean  # geometric mean radius of 1st lognormal dist [m]
+    geosigma_a = geosig  # geometric standard deviation of 1st lognormal dist
 
     ### booleans for figures of grid and superdroplet initial conditions
     print_info = False
@@ -164,6 +170,8 @@ def inputfiles(
             "zmax": zmax,
             "zdelta": zdelta,
             "numconc": numconc,
+            "geomean": geomean,
+            "geosig": geosig,
             "nsupers_pergbx": nsupers_pergbx,
             "alpha": alpha,
             "ngbxs": ngbxs,
@@ -175,8 +183,12 @@ def inputfiles(
             "COUPLTSTEP": COUPLTSTEP,
             "OBSTSTEP": OBSTSTEP,
             "T_END": T_END,
+            "LOWER_COORD3LIM": LOWER_COORD3LIM,
+            "UPPER_COORD3LIM": zmax,
             "newnsupers": newnsupers,
             "NUMCONC_a": NUMCONC_a,
+            "GEOMEAN_a": GEOMEAN_a,
+            "geosigma_a": geosigma_a,
             "enable_terminal_velocity": enable_terminal_velocity,
             "enable_condensation": enable_condensation,
             "enable_collisions": enable_collisions,
