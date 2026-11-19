@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18.0)
 
 project(CleoBindings
   LANGUAGES CXX C
-  DESCRIPTION "Cleo's Python Bindings by Clara Bayley and other developers"
+  DESCRIPTION "Cleo's Python Bindings by Clara Bayley and other Developers"
   VERSION 0.0.0
 )
 

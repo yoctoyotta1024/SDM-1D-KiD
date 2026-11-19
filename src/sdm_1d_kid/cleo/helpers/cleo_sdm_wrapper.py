@@ -35,7 +35,7 @@ class CleoSDMWrapper:
     microphysics scheme (wrapper for compatibility purposes).
 
     This class wraps around the CLEO SDM microphysics to provide compatibility
-    with the Python run scripts and tests in this project. It initializes CLEO
+    with the python run scripts and tests in this project. It initializes CLEO
     SDM microphysics object and provides wrappers around methods to initialize,
     finalize, and run the microphysics.
     """

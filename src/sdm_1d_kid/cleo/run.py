@@ -88,7 +88,7 @@ def main(config_filename):
     run_name = cnfg["run_ensemble"]["run_name"]
     quickplotdir = Path(
         zarrbasedir
-    ).parent  # path for PYMPDATA quickplot of 1-D KiD run
+    ).parent  # path for PyMPDATA quickplot of 1-D KiD run
 
     if not quickplotdir.is_dir():
         raise ValueError("Cannot run Cleo: directory for quickplots doesn't exist")

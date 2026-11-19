@@ -1,9 +1,9 @@
 Running the 1-D KiD with Cleo
 ==============================
 
-The 1-D KiD with Cleo uses the PYMPDATA libray as the thermodynamic driver. To
-run Cleo's C++ code alongside PYMPDATA, we first make the Cleo's python bindings
-(Python module called ``cleo_python_bindings``) using pybind11.
+The 1-D KiD with Cleo uses the PyMPDATA libray as the thermodynamic driver. To
+run Cleo's C++ code alongside PyMPDATA, we first make the Cleo's python bindings
+(python module called ``cleo_python_bindings``) using pybind11.
 
 Creating The Python Bindings
 ----------------------------
@@ -41,8 +41,8 @@ E.g. on Levante:
       $(uv run which python) /work/mh0731/m300950/yacyaxt/gcc/
 
 
-After making the bindings, the ``cleo_python_bindings`` Python module can used just
-like any other ordinary Python module. By default, the bindings are built in
+After making the bindings, the ``cleo_python_bindings`` python module can used just
+like any other ordinary python module. By default, the bindings are built in
 ``/path/to/your/build/_deps/cleo-build/cleo_python_bindings/``.
 
 

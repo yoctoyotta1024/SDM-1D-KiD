@@ -1,6 +1,6 @@
 [project]
 name = "sdm-1d-kid"
-description = "Python project for running superdroplet models coupled to a Pythonic 1-D KiD Driver"
+description = "Python project for running superdroplet models coupled to a pythonic 1-D KiD Driver"
 dynamic = ["version"]
 authors = [
     { name = "Clara Bayley", email = "yoctoyotta1024@yahoo.com" },

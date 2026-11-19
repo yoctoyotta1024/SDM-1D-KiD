@@ -59,7 +59,7 @@ def main(
 
     import sdm_1d_kid.pympdata_driver.quickplot as qp
 
-    print("--- Running PYMPDTA 1-D KiD Rainshaft Model ---")
+    print("--- Running PyMPDTA 1-D KiD Rainshaft Model ---")
     out = run_pympdata_as_1dkid(
         z_min,
         z_max,
