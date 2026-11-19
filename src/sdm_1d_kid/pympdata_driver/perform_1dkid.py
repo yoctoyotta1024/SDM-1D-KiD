@@ -57,7 +57,7 @@ def main(
     """
     from pathlib import Path
 
-    import sdm_1d_kid.pympdata_driver.quickplot as qp
+    import sdm_1d_kid.pympdata_driver.quickplot.quickplot_moisture as qpm
 
     print("--- Running PyMPDTA 1-D KiD Rainshaft Model ---")
     out = run_pympdata_as_1dkid(
@@ -75,7 +75,7 @@ def main(
     print("--- Quick-plotting Results ---")
     assert Path(figpath).exists(), "The specified figpath does not exist."
     assert run_name, "The run_name cannot be empty."
-    qp.quickplot_moisture(out, z_min, z_max, z_delta, figpath, run_name)
+    qpm.quickplot_moisture(out, z_min, z_max, z_delta, figpath, run_name)
     print("------------------------------")
 
     return out
