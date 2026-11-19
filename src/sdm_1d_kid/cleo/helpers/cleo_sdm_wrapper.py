@@ -5,7 +5,7 @@ Copyright (c) 2026 MPI-M, Clara Bayley
 ----- SDM-1D-KiD -----
 File: cleo_sdm_wrapper.py
 Project: helpers
-Created Date: Thursday 1st January 1970
+Created Date: Thursday 19th November 2026
 Author: Clara Bayley (CB)
 Additional Contributors:
 -----
@@ -24,7 +24,7 @@ import os
 import sys
 
 from sdm_1d_kid.cleo.helpers.cleo_sdm import CleoSDM
-from sdm_1d_kid.cleo.helpers.thermo.thermodynamics import Thermodynamics
+from sdm_1d_kid.pympdata_driver.thermo.thermodynamics import Thermodynamics
 
 sys.path.append(os.environ["CLEO_PYTHON_BINDINGS"])
 import cleo_python_bindings as cleo

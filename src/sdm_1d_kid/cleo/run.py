@@ -45,7 +45,7 @@ def main(config_filename):
     from PyMPDATA_examples.Shipway_and_Hill_2012 import si
 
     from sdm_1d_kid.cleo.helpers.cleo_sdm_wrapper import CleoSDMWrapper
-    from sdm_1d_kid.cleo.helpers.thermo.thermodynamics import Thermodynamics
+    from sdm_1d_kid.pympdata_driver.thermo.thermodynamics import Thermodynamics
 
     ### --- load configuration --- ###
     with open(config_filename) as config_file:

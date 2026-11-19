@@ -5,7 +5,7 @@ Copyright (c) 2026 MPI-M, Clara Bayley
 ----- SDM-1D-KiD -----
 File: output_thermodynamics.py
 Project: thermo
-Created Date: Thursday 1st January 1970
+Created Date: Thursday 19th November 2026
 Author: Clara Bayley (CB)
 Additional Contributors:
 -----
@@ -17,8 +17,7 @@ class for storing thermodynamics output during model run
 """
 
 import numpy as np
-
-from sdm_1d_kid.cleo.helpers.thermo.thermodynamics import Thermodynamics
+from pympdata_1d_kid.thermo.thermodynamics import Thermodynamics
 
 
 class OutputVariable:
