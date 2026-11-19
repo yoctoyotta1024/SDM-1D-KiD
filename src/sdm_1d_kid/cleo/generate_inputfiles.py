@@ -142,6 +142,7 @@ def generate_gridfile(
     ygrid = np.asarray([0, 1])
 
     ### --- binary file generation --- ###
+    Path(grid_filename).unlink(missing_ok=True)  # delete any existing grid file
     geninitconds.generate_gridbox_boundaries(
         grid_filename,
         zgrid,
@@ -250,6 +251,7 @@ def generate_superdroplet_initial_conditions_file(
         ]  # indexes of gridboxes of SDs to plot (nb. "all" can be very slow)
 
     ### --- binary file generation --- ###
+    Path(initsupers_filename).unlink(missing_ok=True)  # delete any existing supers file
     initattrsgen = attrsgen.AttrsGenerator(
         radiigen,
         dryradiigen,
