@@ -200,7 +200,7 @@ def generate_superdroplet_initial_conditions_file(
     numconc = float(sds_init["numconc"])
     spectrum = spectra.Lognormal(norm_factor=1.0, m_mode=geomean, s_geom=geosig)
     nsupers_pergbx = int(sds_init["nsupers_pergbx"])
-    alpha = float(sds_init["alpha"])
+    alpha = float(sds_init["alpha"])  ###WIP, issue with randomness?
     default_cdf_range = (0.00001, 0.99999)
     rspan = spectrum.percentiles(
         default_cdf_range
