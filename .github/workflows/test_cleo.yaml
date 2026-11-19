@@ -131,6 +131,10 @@ jobs:
 
       - name: Run Cleo 1-D KiD
         run: |
-          pwd && uv run which python
           path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
           uv run python ./scripts/run_cleo.py ${path2build} "ci_test" 1 --do_run_model
+
+      - name: Postprocess Cleo 1-D KiD ensemble of runs
+        run: |
+          path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
+          uv run python ./scripts/run_cleo.py ${path2build} "ci_test" 1 --do_postprocess

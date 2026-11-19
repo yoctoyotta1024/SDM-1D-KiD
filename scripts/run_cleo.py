@@ -61,7 +61,9 @@ def parse_arguments():
 
 
 # %% ---------------------- HELPER FUNCTION DEFINITIONS ---------------------- #
-def make_directories(path2ensemble, tmppath, sharepath, binpath, savefigpath=None):
+def make_directories(
+    path2ensemble, tmppath, sharepath, binpath, postprocpath, savefigpath=None
+):
     if not path2ensemble.exists():
         logger.warning(
             "path to ensemble doesn't exist, making directory and its parents"
@@ -71,6 +73,7 @@ def make_directories(path2ensemble, tmppath, sharepath, binpath, savefigpath=Non
     tmppath.mkdir(exist_ok=True, parents=False)
     sharepath.mkdir(exist_ok=True, parents=False)
     binpath.mkdir(exist_ok=True, parents=False)
+    postprocpath.mkdir(exist_ok=True, parents=False)
 
     if savefigpath is not None:
         savefigpath.mkdir(exist_ok=True, parents=False)
@@ -149,7 +152,7 @@ def inputfiles(
         config_filename = tmppath / f"config_{run_name}.yaml"
         initsupers_filename = sharepath / f"dimlessSDsinit_{run_name}.dat"
         setup_filename = binpath / f"setup_{run_name}.txt"
-        zarrbasedir = binpath / f"sol_{run_name}.zarr"
+        zarrbasedir = binpath / f"{run_name}.zarr"
         figlabel = f"_{run_name}"
 
         ### --- GENERATE INPUT FILES --- ###
@@ -222,7 +225,7 @@ def run_model(path2build, tmppath):
     )
     os.environ["CLEO_PYTHON_BINDINGS"] = str(path2cleo_python_bindings)
 
-    config_files = glob.glob(os.path.join(tmppath, "*.yaml"))
+    config_files = sorted(glob.glob(os.path.join(tmppath, "*.yaml")))
     if not config_files:
         raise ValueError(
             f"Cannot run Cleo: no configuration files found in search for {tmppath}/*.yaml"
@@ -234,6 +237,25 @@ def run_model(path2build, tmppath):
                 [sys.executable, "-m", "sdm_1d_kid.cleo.run", str(config_filename)],
                 check=True,
             )
+
+
+def postprocess(tmppath, binpath, postprocpath):
+    import glob
+    import os
+
+    from sdm_1d_kid.cleo import postprocess
+
+    config_files = sorted(glob.glob(os.path.join(tmppath, "*.yaml")))
+    setup_files = sorted(glob.glob(os.path.join(binpath, "*.txt")))
+    run_datasets = sorted(glob.glob(os.path.join(binpath, "*.zarr")))
+    if not config_files or not setup_files or not run_datasets:
+        raise ValueError(
+            f"Cannot postprocess Cleo: no output data found in search of {binpath}"
+        )
+    else:
+        postprocess.main(
+            config_files[0], setup_files[0], run_datasets, postprocpath=postprocpath
+        )
 
 
 # %% ----------------------------- MAIN PROGRAM ------------------------------ #
@@ -253,12 +275,18 @@ def main():
     tmppath = path2ensemble / "tmp"
     sharepath = path2ensemble / "share"
     binpath = path2ensemble / "bin"
+    postprocpath = path2ensemble / "postproc"
     savefigpath = binpath
 
     if do_inputfiles:
         logger.info("generating inputfiles")
         make_directories(
-            path2ensemble, tmppath, sharepath, binpath, savefigpath=savefigpath
+            path2ensemble,
+            tmppath,
+            sharepath,
+            binpath,
+            postprocpath,
+            savefigpath=savefigpath,
         )
         inputfiles(
             path2build,
@@ -276,7 +304,7 @@ def main():
 
     if do_postprocess:
         logger.info("post-processing Cleo 1-D KiD output")
-        # postprocess() ###WIP
+        postprocess(tmppath, binpath, postprocpath)
 
     if do_plot_results:
         logger.info("plotting results of Cleo 1-D KiD")
