@@ -107,7 +107,7 @@ class OutputThermodynamics:
           Specific graupel content (kg/kg).
     """
 
-    def __init__(self, shape, zhalf=None, xhalf=None, yhalf=None):
+    def __init__(self, shape, zhalf=None, xhalf=None, yhalf=None, zarrbasedir=None):
         """Initialize an OutputThermodynamics object.
 
         Args:
@@ -145,6 +145,89 @@ class OutputThermodynamics:
             self.yhalf.set(yhalf)
         else:
             self.yhalf = None
+
+        self.zarrbasedir = zarrbasedir
+
+    def _time_varying_2d_variables(self):
+        """Returns list of output variables with dimensions (time, z)."""
+        return [
+            self.temp,
+            self.rhod,
+            self.press,
+            self.qvap,
+            self.qcond,
+            self.qice,
+            self.qrain,
+            self.qsnow,
+            self.qgrau,
+        ]
+
+    @staticmethod
+    def _global_attrs():
+        """Metadata For Xarray Dataset."""
+        from datetime import UTC, datetime
+
+        return {
+            "title": "1-D KiD with PyMPDATA bulk scheme",
+            "created": datetime.now(UTC).isoformat(),
+        }
+
+    def to_xarray(self):
+        """Return the output as an xarray Dataset with dimensions (zfull, time).
+
+        Only the time slices which have actually been written are included. Variables are
+        defined at the centres of gridboxes (full levels, "z"); the gridbox boundaries
+        (half levels) are included as the coordinate "zhalf" if given.
+        """
+        import xarray as xr
+
+        nt = self.time._i  # number of output times actually written
+        long_names = {
+            "temp": "temperature",
+            "rhod": "dry air density",
+            "press": "pressure",
+            "qvap": "water vapour mass mixing ratio",
+            "qcond": "cloud condensate mass mixing ratio",
+            "qice": "cloud ice mass mixing ratio",
+            "qrain": "rain mass mixing ratio",
+            "qsnow": "snow mass mixing ratio",
+            "qgrau": "graupel mass mixing ratio",
+        }
+
+        coords = {
+            "time": ("time", self.time.values[:nt], {"units": "s", "long_name": "time"})
+        }
+        if self.zhalf is not None:
+            zhalf = np.asarray(self.zhalf.values)
+            coords["zhalf"] = (
+                "zhalf",
+                zhalf,
+                {
+                    "units": "m",
+                    "long_name": "height of gridbox boundaries (half levels)",
+                },
+            )
+            coords["zfull"] = (
+                "zfull",
+                0.5 * (zhalf[1:] + zhalf[:-1]),
+                {"units": "m", "long_name": "height of gridbox centres (full levels)"},
+            )
+        for name, var in (("xhalf", self.xhalf), ("yhalf", self.yhalf)):
+            if var is not None:
+                coords[name] = (name, np.asarray(var.values), {"units": var.units})
+
+        data_vars = {
+            var.name: (
+                ("zfull", "time"),
+                var.values[:nt].T,
+                {"units": var.units, "long_name": long_names[var.name]},
+            )
+            for var in self._time_varying_2d_variables()
+        }
+
+        return xr.Dataset(
+            data_vars=data_vars, coords=coords, attrs=self._global_attrs()
+        )
 
     def output_thermodynamics(self, time: float, thermo: Thermodynamics):
         """output thermodynamics from thermo to each variable in thermodynamics output.
@@ -208,20 +291,13 @@ class OutputThermodynamics:
         Returns:
             None
         """
-        self.time.finalize()
-        self.temp.finalize()
-        self.rhod.finalize()
-        self.press.finalize()
-        self.qvap.finalize()
-        self.qcond.finalize()
-        self.qice.finalize()
-        self.qrain.finalize()
-        self.qsnow.finalize()
-        self.qgrau.finalize()
+        for var in [self.time, *self._time_varying_2d_variables()]:
+            var.finalize()
+        for var in (self.zhalf, self.xhalf, self.yhalf):
+            if var is not None:
+                var.finalize()
 
-        if self.zhalf is not None:
-            self.zhalf.finalize()
-        if self.xhalf is not None:
-            self.xhalf.finalize()
-        if self.yhalf is not None:
-            self.yhalf.finalize()
+        if self.zarrbasedir is not None:
+            ds = self.to_xarray()
+            ds.to_zarr(self.zarrbasedir, mode="w", zarr_format=2)
+            print(f"output thermodynamics written to: {self.zarrbasedir}")

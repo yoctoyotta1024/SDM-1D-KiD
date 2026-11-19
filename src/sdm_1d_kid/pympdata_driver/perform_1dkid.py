@@ -29,6 +29,7 @@ def main(
     advect_hydrometeors,
     figpath,
     run_name,
+    zarrbasedir=None,
 ):
     """
     Run test case for a 1-D KiD rainshaft model.
@@ -69,6 +70,7 @@ def main(
         thermo_init,
         microphys_scheme,
         advect_hydrometeors,
+        zarrbasedir=zarrbasedir,
     )
     print("-----------------------------------------------")
 
@@ -90,6 +92,7 @@ def run_pympdata_as_1dkid(
     thermo,
     microphys_scheme,
     advect_hydrometeors,
+    zarrbasedir=None,
 ):
     """Run 1-D KiD rainshaft model with a specified microphysics scheme and KiD dynamics.
 
@@ -138,7 +141,7 @@ def run_pympdata_as_1dkid(
     ntime = int(time_end / timestep) + 1
     nz = len(kid_dynamics.zhalf) - 1
     shape = (ntime, nz)
-    out = OutputThermodynamics(shape, zhalf=kid_dynamics.zhalf)
+    out = OutputThermodynamics(shape, zhalf=kid_dynamics.zhalf, zarrbasedir=zarrbasedir)
 
     time = 0.0
     thermo = kid_dynamics.set_thermo(time, thermo)

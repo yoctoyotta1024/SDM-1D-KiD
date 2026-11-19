@@ -77,21 +77,18 @@ is then passed through to the ``run_model`` function and so no configuration
 file is ever written  (unlike for Cleo).
 
 By default, for an ensemble called "your_ensemble", this script will generate
-the output for each run in ``/path/to/your/build/bulk_scheme/your_ensemble/bin/``.
+the output (a Zarr direcotry and quickplot of the moisture evolution) for each
+run in ``/path/to/your/build/bulk_scheme/your_ensemble/bin/``.
 
 
 .. _do_post_process_bulk:
 
 Post-Processing the Output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Currently, the bulk scheme does not write out any data so there is no
-post-processing.
+###WIP
 
 .. _do_plot_results_bulk:
 
 Plotting the "Quicklooks"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Currently, the bulk scheme does not write out any data so there is no
-quick-plots other than those generated during the model run.
+###WIP

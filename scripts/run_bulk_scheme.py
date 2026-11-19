@@ -85,6 +85,7 @@ def generate_configuration(path2ensemble, binpath, ensemble_name, ensemble_size)
     configs = []
     for n in range(ensemble_size):
         run_name = f"{ensemble_name}_{n}"
+        zarrbasedir = binpath / f"out_{run_name}.zarr"
 
         cnfg = {
             "ensemble_name": ensemble_name,
@@ -95,7 +96,7 @@ def generate_configuration(path2ensemble, binpath, ensemble_name, ensemble_size)
             "zdelta": zdelta,
             "timestep": timestep,
             "t_end": t_end,
-            "binpath": binpath,
+            "zarrbasedir": zarrbasedir,
         }
         configs.append(cnfg)
 

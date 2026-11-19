@@ -48,7 +48,15 @@ def main(cnfg):
     advect_hydrometeors = True  # True == PyMPDATA advection
 
     run_name = cnfg["run_name"]
-    quickplotdir = Path(cnfg["binpath"])  # path for PyMPDATA quickplot of 1-D KiD run
+    zarrbasedir = Path(cnfg["zarrbasedir"]).resolve()
+    quickplotdir = Path(
+        zarrbasedir
+    ).parent  # path for PyMPDATA quickplot of 1-D KiD run
+
+    if not zarrbasedir.parent.is_dir():
+        raise ValueError(
+            "Cannot run bulk scheme: directory for outputdata doesn't exist"
+        )
 
     if not quickplotdir.is_dir():
         raise ValueError(
@@ -85,4 +93,5 @@ def main(cnfg):
         advect_hydrometeors,
         quickplotdir,
         run_name,
+        zarrbasedir=zarrbasedir,
     )
