@@ -14,7 +14,7 @@ https://opensource.org/licenses/BSD-3-Clause
 -----
 File Description:
 Post-process ensemble of (one or more) runs of 1-D kid test case with Cleo
-into single dataset.
+into a single dataset.
 """
 
 # %% ---------------------------- GLOBAL IMPORTS ----------------------------- #
@@ -149,8 +149,8 @@ def process_superdroplets(ds, consts, gbxvols, radius_edges, sddiags_every):
       with dimensions (time_sds, gbxindex):
         - numconc_d: in-cloud droplet number concentration [cm^-3], counting droplets with
           radius > 1 micron in gridboxes with LWC > 1e-5 kg m^-3 (zero outside cloud)
-        - dvol: mass-weighted mean volume diameter of all superdroplets [micro-m]
-        - dvol_sigma: standard deviation of diameter of all superdroplets about dvol [micro-m]
+        - dvol: mass-weighted mean volume diameter of all superdroplets [um]
+        - dvol_sigma: standard deviation of diameter of all superdroplets about dvol [um]
       with dimensions (time_sds, gbxindex, radius_bin):
         - numconc_distrib: number concentration [cm^-3] (sum over bins = massmom0 / volume)
         - mass_distrib: droplet mass concentration [g m^-3] (sum over bins = massmom1 / volume)
@@ -284,13 +284,13 @@ def process_superdroplets(ds, consts, gbxvols, radius_edges, sddiags_every):
         dvol=(
             dims,
             diags["dvol"] * 1e6,
-            {"units": "micro-m", "long_name": "mass weighted mean volume diameter"},
+            {"units": "um", "long_name": "mass weighted mean volume diameter"},
         ),
         dvol_sigma=(
             dims,
             diags["dvol_sigma"] * 1e6,
             {
-                "units": "micro-m",
+                "units": "um",
                 "long_name": "standard deviation of volume diameter about dvol",
             },
         ),
@@ -462,14 +462,15 @@ def add_radar_reflectivity(ds):
 
 
 def add_surface_precipitation(ds, obststep, rolling_window=None):
-    """Add surface precipitation rate, accumulation and (optionally) rolling mean rate.
+    """Convert precipitation to [mm] and add surface precipitation rate, accumulation and
+    (optionally) rolling mean rate.
 
     CLEO's "precip" is the depth of water [m] moving downwards through the lower boundary of
-    each gridbox per output interval, so surface precipitation is taken from the gridbox whose
-    lower boundary is z = 0.
+    each gridbox per output interval. It is converted to [mm] and surface precipitation is
+    taken from the gridbox whose lower boundary is z = 0.
 
     Args:
-        ds (xarray.Dataset): Dataset with "precip" and gridbox bounds (see add_height).
+        ds (xarray.Dataset): Dataset with "precip" [m] and gridbox bounds (see add_height).
         obststep (float): Time between outputs [s].
         rolling_window (int, optional): Width of centred rolling mean window [number of output
           steps]. No rolling mean if None. Note: values within half a window of the
@@ -481,12 +482,18 @@ def add_surface_precipitation(ds, obststep, rolling_window=None):
         logger.warning("no 'precip' in dataset, skipping surface precipitation")
         return ds
 
+    precip = (ds.precip * 1000).assign_attrs(
+        units="mm",
+        long_name="depth of water falling through gridbox lower boundary per output interval",
+    )
+    ds = ds.assign(precip=precip)
+
     is_surface = np.isclose(ds.height_lower.values, 0.0)
     assert is_surface.sum() == 1, (
         "expected exactly one gridbox with lower boundary at z = 0"
     )
-    depth = (
-        ds.precip.isel(height=int(np.argmax(is_surface))) * 1000
+    depth = ds.precip.isel(
+        height=int(np.argmax(is_surface))
     )  # [mm per output interval]
 
     rate = (depth / (obststep / 3600)).assign_attrs(
@@ -630,6 +637,80 @@ def order_dimensions(ds):
     )
 
 
+def add_var_metadata(ds):
+    """Add a "long_name" attribute (and a "description" for some variables) to each of CLEO's
+    output variables.
+
+    Existing attributes (e.g. "units", or a "long_name" already written by CLEO) are never
+    overwritten; only missing attributes are added. Raindrops are droplets with
+    radius >= 40 microns (see CLEO's libs/observers/massmoments_observer.hpp). Variables that
+    are not in the dataset are skipped.
+    """
+    attrs = {
+        "massmom0": {
+            "long_name": "0th mass moment of droplet distribution",
+            "description": "number of droplets in gridbox",
+        },
+        "massmom0_raindrops": {
+            "long_name": "0th mass moment of raindrop distribution",
+            "description": "number of raindrops in gridbox (radius >= 40 microns)",
+        },
+        "massmom1": {
+            "long_name": "1st mass moment of droplet distribution",
+            "description": "mass of droplets, including solute, in gridbox",
+        },
+        "massmom1_raindrops": {
+            "long_name": "1st mass moment of raindrop distribution",
+            "description": "mass of raindrops, including solute, in gridbox (radius >= 40 microns)",
+        },
+        "massmom2": {
+            "long_name": "2nd mass moment of droplet distribution",
+            "description": "proxy for radar reflectivity (Rayleigh regime)",
+        },
+        "massmom2_raindrops": {
+            "long_name": "2nd mass moment of raindrop distribution",
+            "description": "proxy for radar reflectivity of raindrops"
+            " (Rayleigh regime; radius >= 40 microns)",
+        },
+        "nsupers": {"long_name": "number of superdroplets in gridbox"},
+        "totnsupers": {"long_name": "total number of superdroplets in domain"},
+        "press": {"long_name": "air pressure"},
+        "qcond": {"long_name": "liquid water mass mixing ratio"},
+        "qvap": {"long_name": "water vapour mass mixing ratio"},
+        "temp": {"long_name": "air temperature"},
+        "uvel": {"long_name": "eastward (x) wind velocity"},
+        "vvel": {"long_name": "northward (y) wind velocity"},
+        "wvel": {"long_name": "vertical (z) wind velocity"},
+    }
+    return ds.assign(
+        {
+            # existing attributes come last so they take precedence over the new ones
+            name: ds[name].assign_attrs({**var_attrs, **ds[name].attrs})
+            for name, var_attrs in attrs.items()
+            if name in ds
+        }
+    )
+
+
+def metadata_corrections(ds):
+    """Correct non-standard "units" attributes of all variables and coordinates.
+
+    - "" -> "1": CF convention for dimensionless quantities
+    - "micro-m" -> "um": parseable by UDUNITS and pint
+    - "g/Kg" -> "g/kg": typo in CLEO's output (v0.71.0, libs/observers/thermo_observer.hpp)
+
+    Only attributes are changed (the data are not loaded) and the input dataset is not modified.
+    """
+    corrections = {"": "1", "micro-m": "um", "g/Kg": "g/kg"}
+
+    ds = ds.copy()  # shallow copy: new attributes dictionaries, same (lazy) data
+    for var in ds.variables.values():
+        units = var.attrs.get("units")
+        if units in corrections:
+            var.attrs["units"] = corrections[units]
+    return ds
+
+
 def add_setup_metadata(ds, setup_filename):
     """Copy the contents of CLEO's setup .txt file into the dataset's global attributes."""
     from pathlib import Path
@@ -706,6 +787,8 @@ def create_ensemble_dataset(
         .pipe(add_surface_precipitation, config["OBSTSTEP"], precip_rolling_window)
         .pipe(add_thermodynamics)
         .pipe(order_dimensions)
+        .pipe(add_var_metadata)
+        .pipe(metadata_corrections)
     )
 
 
