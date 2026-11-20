@@ -202,13 +202,14 @@ def generate_superdroplet_initial_conditions_file(
     numconc = float(sds_init["numconc"])
     spectrum = spectra.Lognormal(norm_factor=1.0, m_mode=geomean, s_geom=geosig)
     nsupers_pergbx = int(sds_init["nsupers_pergbx"])
-    alpha = float(sds_init["alpha"])  ###WIP, issue with randomness?
+    alpha = float(sds_init["alpha"])
+    alpha_seed = int(sds_init["alpha_seed"])
     ### *(!)Note:* if changing rspan, be mindful of MINRADIUS/MAXRADIUS in config.yaml
     default_cdf_range = (0.00001, 0.99999)
     rspan = spectrum.percentiles(
         default_cdf_range
     )  # min and max range of radii to sample [m]
-    radiigen, xiprobdist = asw.AlphaSamplingWrapper(spectrum, alpha, rspan)
+    radiigen, xiprobdist = asw.AlphaSamplingWrapper(spectrum, alpha, alpha_seed, rspan)
     numconc_tolerance = (
         0.001  # 0.1% tolerance on actual numconc not being equal to input numconc
     )
