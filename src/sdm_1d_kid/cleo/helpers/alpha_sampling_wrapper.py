@@ -18,11 +18,13 @@ Wrapper around PySDM alpha sampling functions
 """
 
 import numpy as np
+from PySDM import Formulae
 from PySDM.backends import CPU
 from PySDM.initialisation.sampling.spectral_sampling import AlphaSampling
 
 
-def AlphaSamplingWrapper(probdistrib, alpha, size_range):
+def AlphaSamplingWrapper(probdistrib, alpha, alpha_seed, size_range):
+    rng = np.random.default_rng(int(alpha_seed))
     alpha_sampling = AlphaSampling(
         probdistrib,
         alpha=alpha,
@@ -37,7 +39,7 @@ def AlphaSamplingWrapper(probdistrib, alpha, size_range):
         return alpha_sampling_xi.xi
 
     def alpha_sampling_radii(nsupers):
-        backend = CPU()
+        backend = CPU(formulae=Formulae(seed=int(rng.integers(0, 2**32))))
         radii, alpha_sampling_xi.xi = alpha_sampling.sample_quasirandom(
             nsupers, backend=backend
         )

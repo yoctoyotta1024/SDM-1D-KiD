@@ -35,6 +35,7 @@ generate_inputfiles:
     numconc : XXX                               # number conc. of initial droplet spectrum [m^-3]
     nsupers_pergbx: XXX                         # no. of super-droplets per gridbox to initialise
     alpha: XXX                                  # sampling param: 0 -> const xi, 1 -> xi follows spectrum
+    alpha_seed: XXX                             # seed to random number generator for alpha sampling (an integer)
     xi_by_pressure: XXX                         # if True, initialise superdroplets according to pressure profile
 
 ### KiD Dynamics Parameters (default initial atmospheric profile is hydrostatic equilibrium) ###

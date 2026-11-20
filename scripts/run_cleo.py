@@ -79,6 +79,16 @@ def make_directories(
         savefigpath.mkdir(exist_ok=True, parents=False)
 
 
+def generate_random_alpha_seeds(ensemble_size):
+    import numpy as np
+
+    base_seed = int(np.random.SeedSequence().entropy)
+    return [
+        int(child.generate_state(1, dtype=np.uint32)[0])
+        for child in np.random.SeedSequence(base_seed).spawn(ensemble_size)
+    ]
+
+
 # %% ----------------------- MAIN FUNCTION DEFINITIONS ----------------------- #
 def inputfiles(
     path2build, tmppath, sharepath, binpath, savefigpath, ensemble_name, ensemble_size
@@ -111,10 +121,12 @@ def inputfiles(
     geomean = 4.0e-8  # geometric mean radius of initial droplet spectrum [m]
     geosig = 1.4  # geometric standard deviation of initial droplet spectrum
     nsupers_pergbx = 256  # no. of super-droplets per gridbox to initialise
-    alpha = 0.0  # sampling param: 0 -> const xi, 1 -> xi follows spectrum
-    ###WIP xi_by_pressure must be False
+    alpha = 1.0  # sampling param: 0 -> const xi, 1 -> xi follows spectrum;
+    alpha_seeds = generate_random_alpha_seeds(
+        ensemble_size
+    )  # seeds for random number generator for alpha sampling (seed = an integer)
     xi_by_pressure = (
-        False  # if True, initialise superdroplets according to pressure profile
+        True  # if True, initialise superdroplets according to pressure profile
     )
 
     ### KiD Dynamics
@@ -197,6 +209,7 @@ def inputfiles(
             "geosig": geosig,
             "nsupers_pergbx": nsupers_pergbx,
             "alpha": alpha,
+            "alpha_seed": alpha_seeds[n],
             "xi_by_pressure": xi_by_pressure,
             "wmax_const": wmax_const,
             "tscale_const": tscale_const,
