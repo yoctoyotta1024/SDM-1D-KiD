@@ -2,6 +2,16 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.3.1](https://github.com/yoctoyotta1024/SDM-1D-KiD/compare/924ebe507f9dacff83d3613d01fb7d8ba497d695..v0.3.1) - 2026-11-20
+#### Bug Fixes
+- use random seeds for alpha sampling - ([a6f0513](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/a6f05130773ed9fd78779eeeec286aa4626fcab3)) - clara.bayley
+#### Miscellaneous Chores
+- use alpha=1.0 and xi_by_pressure=True - ([fc8b49b](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/fc8b49b5adb893b274e388920428414df47d6d0f)) - clara.bayley
+#### Refactoring
+- enable xi_by_pressure initialisation - ([924ebe5](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/924ebe507f9dacff83d3613d01fb7d8ba497d695)) - clara.bayley
+
+- - -
+
 ## [v0.3.0](https://github.com/yoctoyotta1024/SDM-1D-KiD/compare/2c42884302b356f069305844c2c67fb9bb9b18ec..v0.3.0) - 2026-11-20
 #### Bug Fixes
 - drop rhod if similar to rho_dry for bulk scheme - ([f29c6a9](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/f29c6a9373e6c201db103607e5f14c12b416cc19)) - clara.bayley
