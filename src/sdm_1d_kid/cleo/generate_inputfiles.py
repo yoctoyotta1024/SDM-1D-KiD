@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 # %% ------------------------- FUNCTION DEFINITIONS -------------------------- #
 def parse_arguments():
     import argparse
+    import json
     from pathlib import Path
 
     parser = argparse.ArgumentParser()
@@ -41,7 +42,7 @@ def parse_arguments():
     )
     parser.add_argument(
         "config_params",
-        type=dict,
+        type=json.loads,
         default=None,
         help="Dictionary of configuration parameters to set",
     )
