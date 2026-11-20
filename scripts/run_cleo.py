@@ -111,10 +111,9 @@ def inputfiles(
     geomean = 4.0e-8  # geometric mean radius of initial droplet spectrum [m]
     geosig = 1.4  # geometric standard deviation of initial droplet spectrum
     nsupers_pergbx = 256  # no. of super-droplets per gridbox to initialise
-    alpha = 0.0  # sampling param: 0 -> const xi, 1 -> xi follows spectrum
-    ###WIP xi_by_pressure must be False
+    alpha = 1.0  # sampling param: 0 -> const xi, 1 -> xi follows spectrum
     xi_by_pressure = (
-        False  # if True, initialise superdroplets according to pressure profile
+        True  # if True, initialise superdroplets according to pressure profile
     )
 
     ### KiD Dynamics
