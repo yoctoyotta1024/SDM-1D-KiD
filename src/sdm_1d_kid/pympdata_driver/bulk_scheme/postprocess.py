@@ -269,7 +269,7 @@ def main(
 
     is_rhod_equal = check_dry_density(ds, rtol=1e-4)
     if is_rhod_equal:
-        ds.drop_vars(["rhod"], errors="ignore")
+        ds = ds.drop_vars(["rhod"], errors="ignore")
 
     if postprocpath is not None:
         if not postprocpath.is_dir():
