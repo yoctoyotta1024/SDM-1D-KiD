@@ -1,7 +1,7 @@
 Running the 1-D KiD with Cleo
 ==============================
 
-The 1-D KiD with Cleo uses the PyMPDATA libray as the thermodynamic driver. To
+The 1-D KiD with Cleo uses the PyMPDATA library as the thermodynamic driver. To
 run Cleo's C++ code alongside PyMPDATA, we first make the Cleo's python bindings
 (python module called ``cleo_python_bindings``) using pybind11.
 
@@ -164,7 +164,7 @@ divide by the bin-width coordinates, e.g.
 
   import xarray as xr
 
-  ds = xr.open_zarr("/path/to/your/build/cleo/postproc/your_ensemble.zarr")
+  ds = xr.open_zarr("/path/to/your/build/cleo/your_ensemble/postproc/your_ensemble.zarr")
 
   dndlnr = ds.numconc_distrib / ds.radius_bin_dlnr  # number concentration per unit ln(radius), dN/dlnr [cm^-3]
   dmdlnr = ds.mass_distrib / ds.radius_bin_dlnr  # droplet mass concentration per unit ln(radius), dM/dlnr [g m^-3]
