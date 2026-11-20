@@ -1,12 +1,12 @@
 {
-    "index": 0.013,
+    "index": 0.015,
     "references": 0.002,
-    "runkid/bulk_scheme": 0.009,
-    "runkid/cleo": 0.013,
+    "runkid/bulk_scheme": 0.01,
+    "runkid/cleo": 0.015,
     "runkid/runkid": 0.002,
     "usage/contact": 0.002,
-    "usage/contributing": 0.019,
+    "usage/contributing": 0.02,
     "usage/getstart": 0.006,
     "usage/ourdocs": 0.002,
-    "usage/requirements": 0.006
+    "usage/requirements": 0.007
 }
