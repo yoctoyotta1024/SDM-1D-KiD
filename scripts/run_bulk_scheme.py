@@ -61,7 +61,7 @@ def parse_arguments():
 
 
 # %% ---------------------- HELPER FUNCTION DEFINITIONS ---------------------- #
-def make_directories(path2ensemble, binpath):
+def make_directories(path2ensemble, binpath, postprocpath):
     if not path2ensemble.exists():
         logger.warning(
             "path to ensemble doesn't exist, making directory and its parents"
@@ -69,6 +69,7 @@ def make_directories(path2ensemble, binpath):
 
     path2ensemble.mkdir(exist_ok=True, parents=True)
     binpath.mkdir(exist_ok=True, parents=False)
+    postprocpath.mkdir(exist_ok=True, parents=False)
 
 
 # %% ----------------------- MAIN FUNCTION DEFINITIONS ----------------------- #
@@ -85,7 +86,7 @@ def generate_configuration(path2ensemble, binpath, ensemble_name, ensemble_size)
     configs = []
     for n in range(ensemble_size):
         run_name = f"{ensemble_name}_{n}"
-        zarrbasedir = binpath / f"out_{run_name}.zarr"
+        zarrbasedir = binpath / f"{run_name}.zarr"
 
         cnfg = {
             "ensemble_name": ensemble_name,
@@ -110,6 +111,21 @@ def run_model(configs):
         run.main(cnfg)
 
 
+def postprocess(configs, binpath, postprocpath):
+    import glob
+    import os
+
+    from sdm_1d_kid.pympdata_driver.bulk_scheme import postprocess
+
+    run_datasets = sorted(glob.glob(os.path.join(binpath, "*.zarr")))
+    if not configs or not run_datasets:
+        raise ValueError(
+            f"Cannot postprocess bulk scheme: no config given and/or output data found in search of {binpath}"
+        )
+    else:
+        postprocess.main(configs[0], run_datasets, postprocpath=postprocpath)
+
+
 # %% ----------------------------- MAIN PROGRAM ------------------------------ #
 def main():
     ### --- SCRIPT INPUT PARAMETERS --- ###
@@ -125,21 +141,22 @@ def main():
     ### directories for specific ensemble
     path2ensemble = path2build / "bulk_scheme" / ensemble_name
     binpath = path2ensemble / "bin"
+    postprocpath = path2ensemble / "postproc"
+    configs = generate_configuration(
+        path2ensemble, binpath, ensemble_name, ensemble_size
+    )
 
     if do_inputfiles:
         logger.info("generating inputfiles")
-        make_directories(path2ensemble, binpath)
+        make_directories(path2ensemble, binpath, postprocpath)
 
     if do_run_model:
         logger.info("running bulk scheme 1-D KiD model")
-        configs = generate_configuration(
-            path2ensemble, binpath, ensemble_name, ensemble_size
-        )
         run_model(configs)
 
     if do_postprocess:
         logger.info("post-processing bulk scheme 1-D KiD output")
-        # postprocess() ###WIP
+        postprocess(configs, binpath, postprocpath)
 
     if do_plot_results:
         logger.info("plotting results of bulk scheme 1-D KiD")
