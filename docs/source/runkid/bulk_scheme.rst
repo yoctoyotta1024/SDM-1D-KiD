@@ -80,12 +80,55 @@ By default, for an ensemble called "your_ensemble", this script will generate
 the output (a Zarr direcotry and quickplot of the moisture evolution) for each
 run in ``/path/to/your/build/bulk_scheme/your_ensemble/bin/``.
 
+*NOTE:* The bulk scheme is deterministic, so all members of an ensemble are
+identical. It therefore doesn't make sense to run more than one member, however,
+you will still want to post-process the raw output as if it was an
+ensemble (see :ref:`do_postprocess_bulk`).
+
 
 .. _do_postprocess_bulk:
 
 Post-Processing the Output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-###WIP
+
+Run the ``--do_postprocess`` stage to combine the ``.zarr`` output of all the runs in
+your ensemble into a single post-processed dataset (see
+``src/sdm_1d_kid/pympdata_driver/bulk_scheme/postprocess.py`` for details). By default,
+this dataset is written in ``/path/to/your/build/bulk_scheme/your_ensemble/postproc/``
+(see ``generate_configuration`` in ``run_bulk_scheme.py``) as ``your_ensemble.zarr``.
+
+The post-processed dataset has dimensions ``(ensemble, height, time)`` and uses the same
+variable names, units and thermodynamic diagnostics (e.g. ``relh``, ``theta``,
+``rho_dry``) as the post-processed Cleo dataset, so that the two can be compared
+directly.
+
+*NOTE:* The coordinates and variables in the bulk scheme dataset is an exact
+subset of the post-processed ensemble dataset from Cleo, except it may also
+contain the variables ``qrain`` and ``rhod``, which the Cleo dataset does not have.
+Also the bulk scheme's ``lwc`` and ``lwp`` contain no solute (unlike Cleo's).
+
+The bulk scheme output may not be on the same timestep as Cleo's outputs,
+so to compare the two datasets you may need to match their times, e.g.
+
+.. code-block:: python
+
+  import numpy as np
+  import xarray as xr
+
+  ds_bulk = xr.open_zarr("/path/to/your/build/bulk_scheme/your_ensemble/postproc/your_ensemble.zarr")
+  ds_cleo = xr.open_zarr("/path/to/your/build/cleo/your_ensemble/postproc/your_ensemble.zarr")
+
+  if np.all(np.isin(ds_cleo.time.values, ds_bulk.time.values)):
+      ds_bulk_matched = ds_bulk.sel(time=ds_cleo.time)  # exactly matching times
+  else:
+      ds_bulk_matched = ds_bulk.interp(time=ds_cleo.time)  # linear interpolation
+
+If Cleo's output times are a subset of the bulk scheme's (i.e. ``OBSTSTEP`` is a
+multiple of the bulk scheme's timestep), ``sel`` selects the actual model values;
+otherwise ``interp`` interpolates linearly in time (NaN outside the bulk run's time
+range). To compare with Cleo's superdroplet diagnostics, select their times instead,
+e.g. ``ds_bulk_matched.sel(time=ds_cleo.time_sds)``.
+
 
 .. _do_plot_results_bulk:
 
