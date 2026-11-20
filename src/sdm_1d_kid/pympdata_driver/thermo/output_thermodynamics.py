@@ -183,11 +183,11 @@ class OutputThermodynamics:
 
         nt = self.time._i  # number of output times actually written
         long_names = {
-            "temp": "temperature",
+            "temp": "air temperature",
             "rhod": "dry air density",
-            "press": "pressure",
+            "press": "air pressure",
             "qvap": "water vapour mass mixing ratio",
-            "qcond": "cloud condensate mass mixing ratio",
+            "qcond": "liquid water mass mixing ratio",
             "qice": "cloud ice mass mixing ratio",
             "qrain": "rain mass mixing ratio",
             "qsnow": "snow mass mixing ratio",

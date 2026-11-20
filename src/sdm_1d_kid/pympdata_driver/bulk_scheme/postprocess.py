@@ -211,8 +211,10 @@ def check_dry_density(ds, rtol=1e-3):
             f"rho_dry (MetPy) differs from rhod (KiD driver) by up to {reldiff:.2e} "
             "(relative to rhod)"
         )
+        return False
     else:
         logger.info(f"rho_dry (MetPy) matches rhod (KiD driver) ({reldiff:.2e})")
+        return True
 
 
 # %% ----------------------- CREATE ENSEMBLE DATASET ------------------------- #
@@ -265,7 +267,9 @@ def main(
     ensemble_name = cnfg["ensemble_name"]
     ds = create_ensemble_dataset(run_datasets).pipe(add_config_metadata, cnfg)
 
-    check_dry_density(ds, rtol=1e-4)
+    is_rhod_equal = check_dry_density(ds, rtol=1e-4)
+    if is_rhod_equal:
+        ds.drop_vars(["rhod"], errors="ignore")
 
     if postprocpath is not None:
         if not postprocpath.is_dir():
