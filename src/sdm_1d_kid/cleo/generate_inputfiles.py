@@ -203,6 +203,7 @@ def generate_superdroplet_initial_conditions_file(
     spectrum = spectra.Lognormal(norm_factor=1.0, m_mode=geomean, s_geom=geosig)
     nsupers_pergbx = int(sds_init["nsupers_pergbx"])
     alpha = float(sds_init["alpha"])  ###WIP, issue with randomness?
+    ### *(!)Note:* if changing rspan, be mindful of MINRADIUS/MAXRADIUS in config.yaml
     default_cdf_range = (0.00001, 0.99999)
     rspan = spectrum.percentiles(
         default_cdf_range
@@ -211,28 +212,30 @@ def generate_superdroplet_initial_conditions_file(
     numconc_tolerance = (
         0.001  # 0.1% tolerance on actual numconc not being equal to input numconc
     )
-    xi_by_pressure = False  ###WIP
+    xi_by_pressure = sds_init[
+        "xi_by_pressure"
+    ]  # if True, initialise superdroplets according to pressure profile
 
     ### --- Initialise Superdroplets According to Pressure profile --- ###
-    # if xi_by_pressure:
-    #     is_exner_novapour = False  # (!) Settings here MUST match kid_dynamics.py (!)
-    #     is_exner_novapour_uniformrho = False  # (!) Settings MUST match kid_dynamics.py (!)
-    #     p_surf = 1000  # [hPa] PSURF (!) Settings here MUST match kid_dynamics.py (!)
-    #     z_min = -25  # [m] (!) Settings here MUST match those in run_cleo_1dkid.py (!)
-    #     z_max = 3200  # [m] (!) Settings here MUST match those in run_cleo_1dkid.py (!)
-    #     z_delta = 25  # [m] (!) Settings here MUST match those in run_cleo_1dkid.py (!)
-    #     press, press_ref = get_initial_pressure_profile(
-    #         grid_filename=grid_filename,
-    #         is_exner_novapour=is_exner_novapour,
-    #         is_exner_novapour_uniformrho=is_exner_novapour_uniformrho,
-    #         p_surf=p_surf,
-    #         z_min=z_min,
-    #         z_max=z_max,
-    #         z_delta=z_delta,
-    #     )
-    # else:
-    #     press, press_ref = None, 0.0
-    press, press_ref = None, 0.0
+    if xi_by_pressure:
+        raise ValueError("Can't yet use this setting for xi_by_pressure")
+        # is_exner_novapour = False  # (!) Settings here MUST match kid_dynamics.py (!)
+        # is_exner_novapour_uniformrho = False  # (!) Settings MUST match kid_dynamics.py (!)
+        # p_surf = 1000  # [hPa] PSURF (!) Settings here MUST match kid_dynamics.py (!)
+        # z_min = -25  # [m] (!) Settings here MUST match those in run_cleo_1dkid.py (!)
+        # z_max = 3200  # [m] (!) Settings here MUST match those in run_cleo_1dkid.py (!)
+        # z_delta = 25  # [m] (!) Settings here MUST match those in run_cleo_1dkid.py (!)
+        # press, press_ref = get_initial_pressure_profile(
+        #     grid_filename=grid_filename,
+        #     is_exner_novapour=is_exner_novapour,
+        #     is_exner_novapour_uniformrho=is_exner_novapour_uniformrho,
+        #     p_surf=p_surf,
+        #     z_min=z_min,
+        #     z_max=z_max,
+        #     z_delta=z_delta,
+        # )
+    else:
+        press, press_ref = None, 0.0
 
     ### --- Choice of Droplet Dry Radii (i.e. mass of solute) Generator --- ###
     dryr_sf = 1.0  # scale factor for dry radii [m]

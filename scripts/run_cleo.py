@@ -112,6 +112,10 @@ def inputfiles(
     geosig = 1.4  # geometric standard deviation of initial droplet spectrum
     nsupers_pergbx = 256  # no. of super-droplets per gridbox to initialise
     alpha = 0.0  # sampling param: 0 -> const xi, 1 -> xi follows spectrum
+    ###WIP xi_by_pressure must be False
+    xi_by_pressure = (
+        False  # if True, initialise superdroplets according to pressure profile
+    )
 
     ### KiD Dynamics
     wmax_const = 3  # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
@@ -193,6 +197,7 @@ def inputfiles(
             "geosig": geosig,
             "nsupers_pergbx": nsupers_pergbx,
             "alpha": alpha,
+            "xi_by_pressure": xi_by_pressure,
             "wmax_const": wmax_const,
             "tscale_const": tscale_const,
             "is_exner_novapour": is_exner_novapour,
