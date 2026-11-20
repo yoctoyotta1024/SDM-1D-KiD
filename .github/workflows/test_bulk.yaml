@@ -37,10 +37,14 @@ jobs:
         run: |
           pwd && uv run which python
           path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
-          uv run python ./scripts/run_bulk_scheme.py ${path2build} "ci_test" 2 --do_inputfiles
+          uv run python ./scripts/run_bulk_scheme.py ${path2build} "ci_test_bulk" 2 --do_inputfiles
 
       - name: Run Bulk Scheme 1-D KiD
         run: |
-          pwd && uv run which python
           path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
-          uv run python ./scripts/run_bulk_scheme.py ${path2build} "ci_test" 2 --do_run_model
+          uv run python ./scripts/run_bulk_scheme.py ${path2build} "ci_test_bulk" 2 --do_run_model
+
+      - name: Postprocess Bulk Scheme 1-D KiD Ensemble of Runs
+        run: |
+          path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
+          uv run python ./scripts/run_bulk_scheme.py ${path2build} "ci_test_bulk" 2 --do_postprocess

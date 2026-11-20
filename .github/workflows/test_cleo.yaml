@@ -127,14 +127,14 @@ jobs:
         run: |
           pwd && uv run which python
           path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
-          uv run python ./scripts/run_cleo.py ${path2build} "ci_test" 1 --do_inputfiles
+          uv run python ./scripts/run_cleo.py ${path2build} "ci_test_cleo" 1 --do_inputfiles
 
       - name: Run Cleo 1-D KiD
         run: |
           path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
-          uv run python ./scripts/run_cleo.py ${path2build} "ci_test" 1 --do_run_model
+          uv run python ./scripts/run_cleo.py ${path2build} "ci_test_cleo" 1 --do_run_model
 
-      - name: Postprocess Cleo 1-D KiD ensemble of runs
+      - name: Postprocess Cleo 1-D KiD Ensemble of Runs
         run: |
           path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
-          uv run python ./scripts/run_cleo.py ${path2build} "ci_test" 1 --do_postprocess
+          uv run python ./scripts/run_cleo.py ${path2build} "ci_test_cleo" 1 --do_postprocess
