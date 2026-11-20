@@ -173,7 +173,7 @@ def generate_superdroplet_initial_conditions_file(
     from PySDM.initialisation import spectra
 
     from sdm_1d_kid.cleo.helpers import alpha_sampling_wrapper as asw
-    # from sdm_1d_kid.cleo.helpers import get_initial_pressure_profile ###WIP
+    from sdm_1d_kid.cleo.helpers import get_initial_pressure_profile as gipp
 
     ### --- load configuration --- ###
     with open(config_filename) as config_file:
@@ -216,26 +216,14 @@ def generate_superdroplet_initial_conditions_file(
         "xi_by_pressure"
     ]  # if True, initialise superdroplets according to pressure profile
 
-    ### --- Initialise Superdroplets According to Pressure profile --- ###
+    ### --- If Initialise Superdroplets According to Pressure profile --- ###
+    press, press_ref = None, None
     if xi_by_pressure:
-        raise ValueError("Can't yet use this setting for xi_by_pressure")
-        # is_exner_novapour = False  # (!) Settings here MUST match kid_dynamics.py (!)
-        # is_exner_novapour_uniformrho = False  # (!) Settings MUST match kid_dynamics.py (!)
-        # p_surf = 1000  # [hPa] PSURF (!) Settings here MUST match kid_dynamics.py (!)
-        # z_min = -25  # [m] (!) Settings here MUST match those in run_cleo_1dkid.py (!)
-        # z_max = 3200  # [m] (!) Settings here MUST match those in run_cleo_1dkid.py (!)
-        # z_delta = 25  # [m] (!) Settings here MUST match those in run_cleo_1dkid.py (!)
-        # press, press_ref = get_initial_pressure_profile(
-        #     grid_filename=grid_filename,
-        #     is_exner_novapour=is_exner_novapour,
-        #     is_exner_novapour_uniformrho=is_exner_novapour_uniformrho,
-        #     p_surf=p_surf,
-        #     z_min=z_min,
-        #     z_max=z_max,
-        #     z_delta=z_delta,
-        # )
-    else:
-        press, press_ref = None, 0.0
+        kid_config = cnfg["kid_config"]
+        press, press_ref = gipp.get_initial_pressure_profile(
+            grid_filename,
+            kid_config,
+        )
 
     ### --- Choice of Droplet Dry Radii (i.e. mass of solute) Generator --- ###
     dryr_sf = 1.0  # scale factor for dry radii [m]
@@ -250,8 +238,8 @@ def generate_superdroplet_initial_conditions_file(
     if show_figures or save_figures:
         gbxs2plt = [
             0,
-            64,
-            128,
+            cnfg["domain"]["ngbxs"] // 2,
+            cnfg["domain"]["ngbxs"] - 1,
         ]  # indexes of gridboxes of SDs to plot (nb. "all" can be very slow)
 
     ### --- binary file generation --- ###
