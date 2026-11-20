@@ -113,6 +113,22 @@ def inputfiles(
     nsupers_pergbx = 256  # no. of super-droplets per gridbox to initialise
     alpha = 0.0  # sampling param: 0 -> const xi, 1 -> xi follows spectrum
 
+    ### KiD Dynamics
+    wmax_const = 3  # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
+    tscale_const = 600  # timescale of sinusoid [s]
+    psurf_hpa = 1000  # surface pressure [hPa]
+
+    ### KiD Dynamics Initial Atmospheric Profile (default is hydrostatic equilibrium)
+    is_exner_novapour = (
+        False  # use Exner profile without accounting for vapour (Shipway and Hill 2012)
+    )
+    is_exner_novapour_uniformrho = (
+        False  # use Exner also with constant air density (Hill et al. 2023)
+    )
+    is_approx_drhod_dz = (
+        False  # ignore water vapour component in hydrostatic equilibrium profile
+    )
+
     ### timesteps
     CONDTSTEP = 0.1  # time between SD condensation [s]
     COLLTSTEP = 1.25  # time between SD collision [s]
@@ -177,6 +193,14 @@ def inputfiles(
             "geosig": geosig,
             "nsupers_pergbx": nsupers_pergbx,
             "alpha": alpha,
+            "wmax_const": wmax_const,
+            "tscale_const": tscale_const,
+            "is_exner_novapour": is_exner_novapour,
+            "is_exner_novapour_uniformrho": is_exner_novapour_uniformrho,
+            "is_approx_drhod_dz": is_approx_drhod_dz,
+            "psurf_hpa": psurf_hpa,
+            "timestep": COUPLTSTEP,
+            "t_end": T_END,
             "ngbxs": ngbxs,
             "initnsupers": initnsupers,
             "maxnsupers": maxnsupers,

@@ -34,37 +34,59 @@ class KiDDynamics:
     for the original source code.
     """
 
-    def __init__(
-        self, z_min, z_max, z_delta, timestep, t_end, advect_hydrometeors=True
-    ):
+    def __init__(self, kid_config, advect_hydrometeors=True):
         """Initialize the KiDDynamics object.
 
         Args:
-            z_min (float): Minimum height of the domain (bottom of half-cell) [m].
-            z_max (float): Maximum height of the domain (top of half-cell) [m].
-            z_delta (float): Vertical grid spacing [m].
-            timestep (float): Size of time steps of simulation [s].
-            t_end (float): End time of the simulation [s].
+            kid_config (dict): configuration parameters for settings of 1-D KiD.
         """
-        options = Options(n_iters=3, nonoscillatory=True)
+        ### read in config
+        # ``wmax_const`` is similar to 'w1' of equation (6) in Shipway and Hill (2012), but accounting for density
+        # ``tscale_const`` is  't1' of equation (6) in Shipway and Hill (2012)
+        wmax_const = kid_config[
+            "wmax_const"
+        ]  # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
+        tscale_const = kid_config["tscale_const"]  # timescale of sinusoid [s]
+        is_exner_novapour = kid_config["is_exner_novapour"]
+        is_exner_novapour_uniformrho = kid_config["is_exner_novapour_uniformrho"]
+        is_approx_drhod_dz = kid_config["is_approx_drhod_dz"]
 
-        WMAX = 3  # maximum vertical velocity [m/s], 'w1' of equation (6) in Shipway and Hill (2012)
-        TSCALE = 600  # timescale of sinusoid [s], 't1' of equation (6) in Shipway and Hill (2012)
-        PSURF = 1000 * si.hPa
-        is_exner_novapour = False
-        is_exner_novapour_uniformrho = False
+        ### add SI units to config variables
+        wmax_const = wmax_const * si.m / si.s * si.kg / si.m**3
+        tscale_const = tscale_const * si.s
+        p_surf = kid_config["psurf_hpa"] * si.hPa
+        t_max = kid_config["t_end"] * si.s
+        dt = kid_config["timestep"] * si.s
+        z_min = kid_config["zmin"] * si.m
+        z_max = kid_config["zmax"] * si.m
+        dz = kid_config["zdelta"] * si.m
+
+        # *NOTE:*(!)must match above SI units^
+        self.written_kid_config_units = {
+            "zmin": "m",
+            "zmax": "m",
+            "zdelta": "m",
+            "timestep": "s",
+            "t_end": "s",
+            "wmax_const": "kg m^-2 s^-1 (peak rho_d*w)",
+            "tscale_const": "s",
+            "psurf_hpa": "hPa",
+        }
+
+        ### initialise options and settings
+        options = Options(n_iters=3, nonoscillatory=True)
         self.settings = Settings(
-            dt=timestep,
-            dz=z_delta,
-            wmax_const=WMAX,
-            tscale_const=TSCALE,
-            t_max=t_end,
+            dt=dt,
+            dz=dz,
+            wmax_const=wmax_const,
+            tscale_const=tscale_const,
+            t_max=t_max,
             z_min=z_min,
             z_max=z_max,
-            p_surf=PSURF,
+            p_surf=p_surf,
             is_exner_novapour=is_exner_novapour,
             is_exner_novapour_uniformrho=is_exner_novapour_uniformrho,
-            is_approx_drhod_dz=False,
+            is_approx_drhod_dz=is_approx_drhod_dz,
         )
 
         self.mpdata = MPDATA(
@@ -81,16 +103,35 @@ class KiDDynamics:
 
         self.advect_hydrometeors = advect_hydrometeors
 
-        assert self.settings.nz == int((z_max - z_min) / z_delta)
+        assert self.settings.nz == int((z_max - z_min) / dz)
         assert self.settings.z_min == z_min
         assert self.settings.z_max == z_max
-        assert self.settings.dz == z_delta
-        self.zfull = np.arange(z_min + z_delta / 2, z_max + z_delta / 2, z_delta)
-        self.zhalf = np.arange(z_min, z_max + z_delta, z_delta)
+        assert self.settings.dz == dz
+        self.zfull = np.arange(z_min + dz / 2, z_max + dz / 2, dz)
+        self.zhalf = np.arange(z_min, z_max + dz, dz)
         assert np.all((self.zhalf[1:] + self.zhalf[:-1]) / 2 == self.zfull)
 
+        ### print configuration
         key = f"nr={self.mpdata.nr}, dz={self.settings.dz}, dt={self.settings.dt}, options={options}"
         print(f"Simulating {self.settings.nt} timesteps using {key}")
+        print(
+            self._format_kid_config(
+                kid_config, nz=self.settings.nz, nt=self.settings.nt
+            )
+        )
+
+    def _format_kid_config(self, kid_config, nz=None, nt=None):
+        """Return KiD configuration as aligned 'name = value [units]' lines for printing."""
+        width = max(len(key) for key in kid_config)
+        lines = ["KiDDynamics configuration:"]
+        for key, value in kid_config.items():
+            units = self.written_kid_config_units.get(key)
+            lines.append(
+                f"  {key:<{width}} = {value}" + (f" [{units}]" if units else "")
+            )
+        if nz is not None and nt is not None:
+            lines.append(f"  {'(derived)':<{width}} = {nz} gridboxes, {nt} timesteps")
+        return "\n".join(lines)
 
     def set_thermo(self, time, thermo):
         """Set thermodynamics from the dynamics solver.

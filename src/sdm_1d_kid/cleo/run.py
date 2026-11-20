@@ -42,7 +42,6 @@ def main(config_filename):
 
     import numpy as np
     import yaml
-    from PyMPDATA_examples.Shipway_and_Hill_2012 import si
 
     from sdm_1d_kid.cleo.helpers.cleo_sdm_wrapper import CleoSDMWrapper
     from sdm_1d_kid.pympdata_driver import perform_1dkid
@@ -71,19 +70,18 @@ def main(config_filename):
     ):
         raise ValueError("Cannot run Cleo: directory for outputdata doesn't exist")
 
-    ### --- set initial classes (will be updated by PyMPDATA and Cleo) --- ###
-    grid_geom = cnfg["generate_inputfiles"]["grid_geometry"]
-    zmin = float(grid_geom["zmin"]) * si.m
-    zmax = float(grid_geom["zmax"]) * si.m
-    zdelta = float(grid_geom["zdelta"]) * si.m
-    assert (zmax - zmin) % zdelta == 0, "z limit is not a multiple of the grid spacing."
-
-    ngbxs = cnfg["domain"]["ngbxs"]
-    timestep = cnfg["timesteps"]["COUPLTSTEP"] * si.s
-    t_end = cnfg["timesteps"]["T_END"] * si.s
-    t_start = 0.0 * si.s
+    ### --- read and check KiD configuration --- ###
+    t_start = 0.0
     is_motion = True  # True == advect SDs according to wind fields
     advect_hydrometeors = False  # True == PyMPDATA advection (not same as Cleo(!))
+    kid_config = cnfg["kid_config"]
+    timestep = float(kid_config["timestep"])
+    assert kid_config["timestep"] == float(cnfg["timesteps"]["COUPLTSTEP"]), (
+        "timesteps don't agree"
+    )
+    assert float(kid_config["t_end"]) == float(cnfg["timesteps"]["T_END"]), (
+        "end times don't agree"
+    )
 
     run_name = cnfg["run_ensemble"]["run_name"]
     quickplotdir = Path(
@@ -93,6 +91,14 @@ def main(config_filename):
     if not quickplotdir.is_dir():
         raise ValueError("Cannot run Cleo: directory for quickplots doesn't exist")
 
+    zmin = float(kid_config["zmin"])
+    zmax = float(kid_config["zmax"])
+    zdelta = float(kid_config["zdelta"])
+    assert (zmax - zmin) % zdelta == 0, "z limit is not a multiple of the grid spacing."
+    ngbxs = int(np.ceil((zmax - zmin) / zdelta))
+    assert ngbxs == cnfg["domain"]["ngbxs"], "ngbxs don't agree"
+
+    ### --- set initial classes (will be updated by PyMPDATA and Cleo) --- ###
     thermo_init = Thermodynamics(
         np.zeros(ngbxs),
         np.zeros(ngbxs),
@@ -124,11 +130,7 @@ def main(config_filename):
 
     ### --- run 1-D KiD with PyMPDATA and Cleo --- ###
     perform_1dkid.main(
-        zmin,
-        zmax,
-        zdelta,
-        t_end,
-        timestep,
+        kid_config,
         thermo_init,
         microphys_scheme,
         advect_hydrometeors,

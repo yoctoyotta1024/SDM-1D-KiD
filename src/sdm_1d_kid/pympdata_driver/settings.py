@@ -35,8 +35,8 @@ class Settings:
         self,
         dt: float,
         dz: float,
-        wmax_const: float,
-        tscale_const: float,
+        wmax_const: float = 3 * si.m / si.s * si.kg / si.m**3,
+        tscale_const: float = 600 * si.s,
         t_max: float = 15 * si.minutes,
         z_min: float = 0 * si.metres,
         z_max: float = 3000 * si.metres,
@@ -137,8 +137,8 @@ class Settings:
                 self.rhod(zpos(z)), self.temp(zpos(z)), qv
             )
 
-        rhod_w_const = wmax_const * si.m / si.s * si.kg / si.m**3
-        self.t_1 = tscale_const * si.s
+        rhod_w_const = wmax_const
+        self.t_1 = tscale_const
         self.rhod_w = lambda t: (
             rhod_w_const * np.sin(np.pi * t / self.t_1) if t < self.t_1 else 0
         )

@@ -25,7 +25,7 @@ run_ensemble:
 
 ### Superdroplet Initialisation Parameters ###
 generate_inputfiles:
-  grid_geometry:
+  grid_geometry: &grid_geometry
     zmin: XXX                                   # minimum z-coord of domain [m]
     zmax: XXX                                   # maximum z-coord of domain [m]
     zdelta: XXX                                 # z-spacing of gridboxes in domain [m]
@@ -35,6 +35,18 @@ generate_inputfiles:
     numconc : XXX                               # number conc. of initial droplet spectrum [m^-3]
     nsupers_pergbx: XXX                         # no. of super-droplets per gridbox to initialise
     alpha: XXX                                  # sampling param: 0 -> const xi, 1 -> xi follows spectrum
+
+### KiD Dynamics Parameters (default initial atmospheric profile is hydrostatic equilibrium) ###
+kid_config:
+  <<: *grid_geometry                            # zmin, zmax and zdelta from grid_geometry
+  wmax_const: XXX                               # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
+  tscale_const: XXX                             # timescale of sinusoid [s]
+  psurf_hpa: XXX                                # surface pressure [hPa]
+  is_exner_novapour: XXX                        # use Exner profile without accounting for vapour (Shipway and Hill 2012)
+  is_exner_novapour_uniformrho: XXX             # use Exner also with constant air density (Hill et al. 2023)
+  is_approx_drhod_dz: XXX                       # ignore water vapour component in hydrostatic equilibrium profile
+  timestep: XXX                                 # == COUPLTSTEP, time between dynamic couplings [s]
+  t_end: XXX                                    # == T_END, time span of integration from 0s to T_END [s]
 
 ### SDM Runtime Parameters ###
 domain:
@@ -48,7 +60,7 @@ timesteps:
   MOTIONTSTEP : XXX                             # time between SDM motion [s]
   COUPLTSTEP : XXX                              # time between dynamic couplings [s]
   OBSTSTEP : XXX                                # time between SDM observations [s]
-  T_END : XXX                                  # time span of integration from 0s to T_END [s]
+  T_END : XXX                                   # time span of integration from 0s to T_END [s]
 
 ### Initialisation Parameters ###
 inputfiles:

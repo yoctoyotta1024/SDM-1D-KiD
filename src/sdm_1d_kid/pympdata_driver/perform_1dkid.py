@@ -19,11 +19,7 @@ and then plot a quickplot of the moisture field results.
 
 
 def main(
-    z_min,
-    z_max,
-    z_delta,
-    time_end,
-    timestep,
+    kid_config,
     thermo_init,
     microphys_scheme,
     advect_hydrometeors,
@@ -39,11 +35,7 @@ def main(
     figpath directory using the run_name as a label.
 
     Args:
-        z_min (float): Lower limit of 1-D column (max half-cell) (m).
-        z_max (float): Upper limit of 1-D column (max half-cell) (m).
-        z_delta (float): Grid spacing of 1-D column (m).
-        time_end (float): End time for the simulation (s).
-        timestep (float): Timestep for the simulation (s).
+        kid_config (dict): Configuration parameters for settings of 1-D KiD.
         thermo_init (Thermodynamics): Initial thermodynamics.
         microphys_scheme: Microphysics scheme to use in test run.
         figpath (str): Path to the directory where data/plots will be saved.
@@ -62,11 +54,7 @@ def main(
 
     print("--- Running PyMPDTA 1-D KiD Rainshaft Model ---")
     out = run_pympdata_as_1dkid(
-        z_min,
-        z_max,
-        z_delta,
-        time_end,
-        timestep,
+        kid_config,
         thermo_init,
         microphys_scheme,
         advect_hydrometeors,
@@ -77,18 +65,21 @@ def main(
     print("--- Quick-plotting Results ---")
     assert Path(figpath).exists(), "The specified figpath does not exist."
     assert run_name, "The run_name cannot be empty."
-    qpm.quickplot_moisture(out, z_min, z_max, z_delta, figpath, run_name)
+    qpm.quickplot_moisture(
+        out,
+        kid_config["zmin"],
+        kid_config["zmax"],
+        kid_config["zdelta"],
+        figpath,
+        run_name,
+    )
     print("------------------------------")
 
     return out
 
 
 def run_pympdata_as_1dkid(
-    z_min,
-    z_max,
-    z_delta,
-    time_end,
-    timestep,
+    kid_config,
     thermo,
     microphys_scheme,
     advect_hydrometeors,
@@ -101,16 +92,8 @@ def run_pympdata_as_1dkid(
     a constant timestep based on the Shipway and Hill (2012) setup.
 
     Parameters:
-        z_min (float):
-          Lower limit of 1-D column (m).
-        z_max (float):
-          Upper limit of 1-D column (m).
-        z_delta (float):
-          Grid spacing od 1-D column (m).
-        time_end (float):
-          End time for the simulation (s).
-        timestep (float):
-          Timestep for the simulation (s).
+        kid_config (dict):
+          Configuration parameters for settings of 1-D KiD.
         thermo (Thermodynamics):
           Initial thermodynamic conditions.
         microphys_scheme:
@@ -125,20 +108,18 @@ def run_pympdata_as_1dkid(
     )
 
     ### type of dynamics rainshaft will undergo
+    t_end = kid_config["t_end"]
+    timestep = kid_config["timestep"]
     kid_dynamics = KiDDynamics(
-        z_min,
-        z_max,
-        z_delta,
-        timestep,
-        time_end,
+        kid_config,
         advect_hydrometeors=advect_hydrometeors,
     )
 
-    ### run dynamics + microphysics from time to time_end
+    ### run dynamics + microphysics from time to t_end
     microphys_scheme.initialize()
 
     ### data to output during model run
-    ntime = int(time_end / timestep) + 1
+    ntime = int(t_end / timestep) + 1
     nz = len(kid_dynamics.zhalf) - 1
     shape = (ntime, nz)
     out = OutputThermodynamics(shape, zhalf=kid_dynamics.zhalf, zarrbasedir=zarrbasedir)
@@ -146,7 +127,7 @@ def run_pympdata_as_1dkid(
     time = 0.0
     thermo = kid_dynamics.set_thermo(time, thermo)
     out.output_thermodynamics(time, thermo)
-    while time < time_end:
+    while time < t_end:
         thermo = kid_dynamics.run(time, timestep, thermo)
         thermo = microphys_scheme.run(timestep, thermo)
         kid_dynamics.set_advectees(thermo)

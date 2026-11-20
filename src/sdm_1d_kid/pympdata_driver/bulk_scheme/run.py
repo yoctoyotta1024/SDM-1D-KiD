@@ -28,7 +28,6 @@ def main(cnfg):
     from pathlib import Path
 
     import numpy as np
-    from PyMPDATA_examples.Shipway_and_Hill_2012 import si
 
     from sdm_1d_kid.pympdata_driver import perform_1dkid
     from sdm_1d_kid.pympdata_driver.bulk_scheme.bulk_scheme_wrapper import (
@@ -36,16 +35,9 @@ def main(cnfg):
     )
     from sdm_1d_kid.pympdata_driver.thermo.thermodynamics import Thermodynamics
 
-    ### --- set initial classes (will be updated by PyMPDATA and bulk scheme) --- ###
-    zmin = cnfg["zmin"] * si.m
-    zmax = cnfg["zmax"] * si.m
-    zdelta = cnfg["zdelta"] * si.m
-    ngbxs = int((zmax - zmin) / zdelta)
-    assert (zmax - zmin) % zdelta == 0, "z limit is not a multiple of the grid spacing."
-
-    timestep = cnfg["timestep"] * si.s
-    t_end = cnfg["t_end"] * si.s
+    ### --- read and check KiD configuration --- ###
     advect_hydrometeors = True  # True == PyMPDATA advection
+    kid_config = cnfg["kid_config"]
 
     run_name = cnfg["run_name"]
     zarrbasedir = Path(cnfg["zarrbasedir"]).resolve()
@@ -63,6 +55,13 @@ def main(cnfg):
             "Cannot run bulk scheme: directory for quickplots doesn't exist"
         )
 
+    zmin = kid_config["zmin"]
+    zmax = kid_config["zmax"]
+    zdelta = kid_config["zdelta"]
+    assert (zmax - zmin) % zdelta == 0, "z limit is not a multiple of the grid spacing."
+    ngbxs = int((zmax - zmin) / zdelta)
+
+    ### --- set initial classes (will be updated by PyMPDATA and bulk scheme) --- ###
     null = np.array([])  # this microphysics test doesn't need winds
     thermo_init = Thermodynamics(
         np.zeros(ngbxs),
@@ -83,11 +82,7 @@ def main(cnfg):
 
     ### --- run 1-D KiD with PyMPDATA and bulk scheme microphysics --- ###
     perform_1dkid.main(
-        zmin,
-        zmax,
-        zdelta,
-        t_end,
-        timestep,
+        kid_config,
         thermo_init,
         microphys_scheme,
         advect_hydrometeors,

@@ -83,6 +83,22 @@ def generate_configuration(path2ensemble, binpath, ensemble_name, ensemble_size)
     timestep = 1.25  # time between dynamic couplings [s]
     t_end = 3600  # time span of integration from 0s to T_END [s]
 
+    ### KiD Dynamics
+    wmax_const = 3  # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
+    tscale_const = 600  # timescale of sinusoid [s]
+    psurf_hpa = 1000  # surface pressure [hPa]
+
+    ### KiD Dynamics Initial Atmospheric Profile (default is hydrostatic equilibrium)
+    is_exner_novapour = (
+        False  # use Exner profile without accounting for vapour (Shipway and Hill 2012)
+    )
+    is_exner_novapour_uniformrho = (
+        False  # use Exner also with constant air density (Hill et al. 2023)
+    )
+    is_approx_drhod_dz = (
+        False  # ignore water vapour component in hydrostatic equilibrium profile
+    )
+
     configs = []
     for n in range(ensemble_size):
         run_name = f"{ensemble_name}_{n}"
@@ -92,12 +108,20 @@ def generate_configuration(path2ensemble, binpath, ensemble_name, ensemble_size)
             "ensemble_name": ensemble_name,
             "ensemble_size": ensemble_size,
             "run_name": run_name,
-            "zmin": zmin,
-            "zmax": zmax,
-            "zdelta": zdelta,
-            "timestep": timestep,
-            "t_end": t_end,
             "zarrbasedir": zarrbasedir,
+            "kid_config": {
+                "wmax_const": wmax_const,
+                "tscale_const": tscale_const,
+                "is_exner_novapour": is_exner_novapour,
+                "is_exner_novapour_uniformrho": is_exner_novapour_uniformrho,
+                "is_approx_drhod_dz": is_approx_drhod_dz,
+                "psurf_hpa": psurf_hpa,
+                "zmin": zmin,
+                "zmax": zmax,
+                "zdelta": zdelta,
+                "timestep": timestep,
+                "t_end": t_end,
+            },
         }
         configs.append(cnfg)
 
