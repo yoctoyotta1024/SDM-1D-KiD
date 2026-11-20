@@ -277,14 +277,19 @@ def process_superdroplets(ds, consts, gbxvols, radius_edges, sddiags_every):
             diags["xi_incloud"] / vol / 1e6,
             {
                 "units": "cm^-3",
-                "long_name": "in-cloud droplet number concentration (radius > 1 micron, "
-                "LWC > 1e-5 kg m^-3; zero outside cloud)",
+                "long_name": "in-cloud droplet number concentration",
+                "description": "(radius > 1 micron, LWC > 1e-5 kg m^-3; "
+                "zero outside cloud; LWC calculation includes droplet solute mass)",
             },
         ),
         dvol=(
             dims,
             diags["dvol"] * 1e6,
-            {"units": "um", "long_name": "mass weighted mean volume diameter"},
+            {
+                "units": "um",
+                "long_name": "mass weighted mean volume diameter",
+                "description": "(excludes solute mass in calculation)",
+            },
         ),
         dvol_sigma=(
             dims,
@@ -292,6 +297,7 @@ def process_superdroplets(ds, consts, gbxvols, radius_edges, sddiags_every):
             {
                 "units": "um",
                 "long_name": "standard deviation of volume diameter about dvol",
+                "description": "(excludes solute mass in calculation)",
             },
         ),
         numconc_distrib=(
@@ -304,7 +310,8 @@ def process_superdroplets(ds, consts, gbxvols, radius_edges, sddiags_every):
             (diags["mass"] / vol_bins).astype(np.float32),
             {
                 "units": "g m^-3",
-                "long_name": "droplet mass concentration (incl. solute) in each radius bin",
+                "long_name": "droplet mass concentration in each radius bin",
+                "description": "(includes droplet solute mass)",
             },
         ),
         msol_mass_distrib=(
@@ -321,6 +328,7 @@ def process_superdroplets(ds, consts, gbxvols, radius_edges, sddiags_every):
             {
                 "units": "mm^6 m^-3",
                 "long_name": "radar reflectivity factor in each radius bin (Rayleigh regime)",
+                "description": "(radius calculation includes droplet solute mass)",
             },
         ),
     )
@@ -430,11 +438,15 @@ def add_liquid_water(ds):
         units="cm^-3", long_name="droplet number concentration"
     )
     lwc = (ds.massmom1 / ds.volume).assign_attrs(
-        units="g m^-3", long_name="liquid water content"
+        units="g m^-3",
+        long_name="liquid water content",
+        description="(includes droplet solute mass)",
     )
     dz = ds.height_upper - ds.height_lower
     lwp = ((lwc * dz).where(ds.height_lower >= 0.0).sum("height") / 1000).assign_attrs(
-        units="kg m^-2", long_name="liquid water path (above surface)"
+        units="kg m^-2",
+        long_name="liquid water path (above surface)",
+        description="(includes droplet solute mass)",
     )
 
     return ds.assign(numconc=numconc, lwc=lwc, lwp=lwp)
@@ -456,7 +468,9 @@ def add_radar_reflectivity(ds):
     )  # Z relative to 1 mm^6 m^-3
     return ds.assign(
         reflectivity_dbz=dbz.assign_attrs(
-            units="dBZ", long_name="radar reflectivity (Rayleigh regime)"
+            units="dBZ",
+            long_name="radar reflectivity (Rayleigh regime)",
+            description="(radius calculation includes droplet solute mass)",
         )
     )
 
@@ -657,25 +671,30 @@ def add_var_metadata(ds):
         },
         "massmom1": {
             "long_name": "1st mass moment of droplet distribution",
-            "description": "mass of droplets, including solute, in gridbox",
+            "description": "mass of droplets in gridbox (includes droplet solute mass)",
         },
         "massmom1_raindrops": {
             "long_name": "1st mass moment of raindrop distribution",
-            "description": "mass of raindrops, including solute, in gridbox (radius >= 40 microns)",
+            "description": "mass of raindrops in gridbox (radius >= 40 microns; "
+            "includes droplet solute mass)",
         },
         "massmom2": {
             "long_name": "2nd mass moment of droplet distribution",
-            "description": "proxy for radar reflectivity (Rayleigh regime)",
+            "description": "proxy for radar reflectivity (Rayleigh regime; "
+            "includes droplet solute mass)",
         },
         "massmom2_raindrops": {
             "long_name": "2nd mass moment of raindrop distribution",
-            "description": "proxy for radar reflectivity of raindrops"
-            " (Rayleigh regime; radius >= 40 microns)",
+            "description": "proxy for radar reflectivity of raindrops "
+            "(Rayleigh regime; radius >= 40 microns; includes droplet solute mass)",
         },
         "nsupers": {"long_name": "number of superdroplets in gridbox"},
         "totnsupers": {"long_name": "total number of superdroplets in domain"},
         "press": {"long_name": "air pressure"},
-        "qcond": {"long_name": "liquid water mass mixing ratio"},
+        "qcond": {
+            "long_name": "liquid water mass mixing ratio",
+            "description": "liquid water only (excludes solute mass in calculation)",
+        },
         "qvap": {"long_name": "water vapour mass mixing ratio"},
         "temp": {"long_name": "air temperature"},
         "uvel": {"long_name": "eastward (x) wind velocity"},
