@@ -87,8 +87,8 @@ Formatting and Linting your Code
 Python
 ~~~~~~~
 
-For Python, we use `ruff <https://docs.astral.sh/ruff/>`_ for formatting and linting. Ruff checks
-are something like the combination of several Python linters (Flake8, isort, pydocstyle etc.) and
+For python, we use `ruff <https://docs.astral.sh/ruff/>`_ for formatting and linting. Ruff checks
+are something like the combination of several python linters (Flake8, isort, pydocstyle etc.) and
 the black formatter. We obey the default settings of ruff and these are automatically enforced for
 you if you use our pre-commit hooks (see below).
 

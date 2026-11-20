@@ -1,2 +1,2 @@
 def main() -> None:
-    print("Hello from sdm-1d-kid!")
+    print("Hello from SDM-1D-KiD!")

@@ -85,8 +85,8 @@ on our GitHub repository.
   another environment that does work with MPI (e.g. ```clouds``), then install mpi4py, and afterwards
   install the other requirements (``python -m pip install -r requirements.txt``). Delete any
   ``libmpi.so`` and ``libmpi.so.40`` libraries created in the process, e.g.
-  ``rm  /work/bm1183/m300950/bin/envs/sdm1dkid/lib/libmpi.so.40`` and
-  ``rm /work/bm1183/m300950/bin/envs/sdm1dkid/lib/libmpi.so``.)
+  ``rm  ./.venv/lib/libmpi.so.40`` and
+  ``rm ./.venv/lib/libmpi.so``.)
 
   See the `mpi4py documentation <https://mpi4py.readthedocs.io/en/stable/install.html#build-backends>`_
   for more information.

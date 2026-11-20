@@ -51,7 +51,7 @@ on our GitHub repository if you discover this environment is missing any package
 
 Using PyBind11 on ARM64 (Macbooks with M1 Processors) instead of x86_64 Architectures
 -------------------------------------------------------------------------------------
-If you are using Python on an ARM64 architecture (e.g. you have a Mac with an M1 silicon chip) then
+If you are using python on an ARM64 architecture (e.g. you have a Mac with an M1 silicon chip) then
 you need to ensure the python libraries have been installed for ARM64 and *not* x86_64
 architectures. You can check this by entering either ``file [your_python_library].dylib`` or
 ``file [your_python_library].so``, which will tell you which architecture your python is installed
