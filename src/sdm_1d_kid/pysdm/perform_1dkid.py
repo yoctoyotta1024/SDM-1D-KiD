@@ -37,7 +37,7 @@ def main(
     kid = PySDMKiDDynamics(kid_config, sds_init, sdm_settings, outputdata)
     output = kid.run().products
     for variable, values in output.items():
-        assert type(values) == np.ndarray
+        assert isinstance(values, np.ndarray)
         file = outputdata["outputdir"] / f"{variable}.npy".replace(" ", "_")
         np.save(file, values)
     print("-----------------------------------------------")

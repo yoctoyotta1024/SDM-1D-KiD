@@ -73,7 +73,7 @@ def main(config_filename):
     # collision_kernel = None vs. collision_kernel = Hydrodynamic()
     # is_exner_novapour, is_exner_novapour_uniformrho, is_approx_drhod_dz
 
-    ### --- run 1-D KiD with PyMPDATA and Cleo --- ###
+    ### --- run 1-D KiD with PyMPDATA and PySDM --- ###
     perform_1dkid.main(
         kid_config,
         sds_init,

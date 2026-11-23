@@ -181,7 +181,7 @@ def run_model(tmppath):
     config_files = sorted(glob.glob(os.path.join(tmppath, "*.yaml")))
     if not config_files:
         raise ValueError(
-            f"Cannot run Cleo: no configuration files found in search for {tmppath}/*.yaml"
+            f"Cannot run PySDM: no configuration files found in search for {tmppath}/*.yaml"
         )
     else:
         for config_filename in config_files:
