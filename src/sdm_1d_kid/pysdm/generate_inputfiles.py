@@ -5,7 +5,7 @@ Copyright (c) 2026 MPI-M, Clara Bayley
 ----- SDM-1D-KiD -----
 File: generate_inputfiles.py
 Project: pysdm
-Created Date: Thursday 1st January 1970
+Created Date: Monday 23rd November 2026
 Author: Clara Bayley (CB)
 Additional Contributors:
 -----

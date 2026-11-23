@@ -17,9 +17,9 @@ class for driving KiD rainshaft test case
 """
 
 import numpy as np
-from PyMPDATA import Options
 from PyMPDATA_examples.Shipway_and_Hill_2012 import si
 
+import sdm_1d_kid.pympdata_driver.common as cmn
 from sdm_1d_kid.pympdata_driver.mpdata import MPDATA
 from sdm_1d_kid.pympdata_driver.settings import Settings
 
@@ -73,8 +73,7 @@ class KiDDynamics:
             "psurf_hpa": "hPa",
         }
 
-        ### initialise options and settings
-        options = Options(n_iters=3, nonoscillatory=True)
+        ### initialise options, settings and MPDATA
         self.settings = Settings(
             dt=dt,
             dz=dz,
@@ -89,6 +88,7 @@ class KiDDynamics:
             is_approx_drhod_dz=is_approx_drhod_dz,
         )
 
+        options = cmn.get_options()
         self.mpdata = MPDATA(
             nz=self.settings.nz,
             dt=self.settings.dt,

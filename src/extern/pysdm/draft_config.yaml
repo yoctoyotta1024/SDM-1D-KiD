@@ -34,16 +34,14 @@ generate_inputfiles:
 
 ### KiD Dynamics Parameters (default initial atmospheric profile is hydrostatic equilibrium) ###
 kid_config:
-  zmin: XXX                                   # minimum z-coord of domain [m]
   zmax: XXX                                   # maximum z-coord of domain [m]
   zdelta: XXX                                 # z-spacing of gridboxes in domain [m]
   wmax_const: XXX                             # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
   tscale_const: XXX                           # timescale of sinusoid [s]
   psurf_hpa: XXX                              # surface pressure [hPa]
-  ### WIP allow dynamics settings in PySDM
   is_exner_novapour: False                    # use Exner profile without accounting for vapour (Shipway and Hill 2012)
   is_exner_novapour_uniformrho: False         # use Exner also with constant air density (Hill et al. 2023)
-  is_approx_drhod_dz: XXX                     # ignore water vapour component in hydrostatic equilibrium profile
+  is_approx_drhod_dz: False                   # ignore water vapour component in hydrostatic equilibrium profile
   timestep: XXX                               # == COUPLTSTEP, time between dynamic couplings [s]
   t_end: XXX                                  # == T_END, time span of integration from 0s to T_END [s]
 
@@ -51,7 +49,6 @@ kid_config:
 sdm_settings:
   is_precip: XXX                              # enable/disable precipitation scheme
   kappa: XXX                                  # Aerosol hygroscopicity factor
-  n_iters: XXX                                # number of iterations to run
 
 ### Output Parameters ###
 outputdata:

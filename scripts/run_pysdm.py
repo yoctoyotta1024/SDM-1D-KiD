@@ -60,7 +60,9 @@ def parse_arguments():
 
 
 # %% ---------------------- HELPER FUNCTION DEFINITIONS ---------------------- #
-def make_directories(path2ensemble, tmppath, binpath, postprocpath):
+def make_directories(
+    path2ensemble, tmppath, binpath, postprocpath, ensemble_name, ensemble_size
+):
     if not path2ensemble.exists():
         logger.warning(
             "path to ensemble doesn't exist, making directory and its parents"
@@ -70,6 +72,11 @@ def make_directories(path2ensemble, tmppath, binpath, postprocpath):
     tmppath.mkdir(exist_ok=True, parents=False)
     binpath.mkdir(exist_ok=True, parents=False)
     postprocpath.mkdir(exist_ok=True, parents=False)
+
+    for n in range(ensemble_size):
+        run_name = f"{ensemble_name}_{n}"
+        outputdir = binpath / run_name
+        outputdir.mkdir(exist_ok=True, parents=False)
 
 
 # %% ----------------------- MAIN FUNCTION DEFINITIONS ----------------------- #
@@ -82,7 +89,6 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
     from sdm_1d_kid.pysdm import generate_inputfiles
 
     ### grid_geometry
-    zmin = 0  # minimum z-coord of domain [m]
     zmax = 3200  # maximum z-coord of domain [m]
     zdelta = 25  # z-spacing of gridboxes in domain [m]
 
@@ -100,8 +106,6 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
     ### SDM Runtime Parameter
     kappa = 0.9  # Aerosol hygroscopicity factor
     is_precip = True  # enable/disable precipitation scheme
-    n_iters = 1  # number of iterations to run
-    # collision_kernel = Hydrodynamic(),  ###WIP
 
     ### timesteps
     timestep = 1.25  # time between SD collision [s]
@@ -111,11 +115,6 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
     wmax_const = 3  # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
     tscale_const = 600  # timescale of sinusoid [s]
     psurf_hpa = 1000  # surface pressure [hPa]
-
-    ### KiD Dynamics Initial Atmospheric Profile (default is hydrostatic equilibrium)
-    is_approx_drhod_dz = (
-        False  # ignore water vapour component in hydrostatic equilibrium profile
-    )
 
     ### Output Parameters ###
     output_timestep = 1.25  # time between SDM observations [s]
@@ -151,18 +150,15 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
             "nsupers_pergbx": nsupers_pergbx,
             "alpha": alpha,
             "alpha_seed": alpha_seeds[n],
-            "zmin": zmin,
             "zmax": zmax,
             "zdelta": zdelta,
             "wmax_const": wmax_const,
             "tscale_const": tscale_const,
             "psurf_hpa": psurf_hpa,
-            "is_approx_drhod_dz": is_approx_drhod_dz,
             "timestep": timestep,
             "t_end": t_end,
             "is_precip": is_precip,
             "kappa": kappa,
-            "n_iters": n_iters,
             "outputdir": str(outputdir),
             "output_timestep": output_timestep,
             "cloud_water_radius_range": cloud_water_radius_range,
@@ -176,8 +172,20 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
         )
 
 
-def run_model(path2build):
-    print("###WIP")
+def run_model(tmppath):
+    import glob
+    import os
+
+    from sdm_1d_kid.pysdm import run
+
+    config_files = sorted(glob.glob(os.path.join(tmppath, "*.yaml")))
+    if not config_files:
+        raise ValueError(
+            f"Cannot run Cleo: no configuration files found in search for {tmppath}/*.yaml"
+        )
+    else:
+        for config_filename in config_files:
+            run.main(config_filename)
 
 
 def postprocess(binpath, postprocpath):
@@ -204,12 +212,14 @@ def main():
 
     if do_inputfiles:
         logger.info("generating inputfiles")
-        make_directories(path2ensemble, tmppath, binpath, postprocpath)
+        make_directories(
+            path2ensemble, tmppath, binpath, postprocpath, ensemble_name, ensemble_size
+        )
         inputfiles(tmppath, binpath, ensemble_name, ensemble_size)
 
     if do_run_model:
         logger.info("running PySDM 1-D KiD model")
-        run_model(path2build)
+        run_model(tmppath)
 
     if do_postprocess:
         logger.info("post-processing PySDM 1-D KiD output")

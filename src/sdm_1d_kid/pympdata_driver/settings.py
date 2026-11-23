@@ -19,13 +19,13 @@ between v1.6.1 and v1.6.2
 """
 
 import numpy as np
-from numdifftools import Derivative
 from PyMPDATA_examples.Shipway_and_Hill_2012 import formulae
 from PyMPDATA_examples.Shipway_and_Hill_2012.formulae import const, si
 from pystrict import strict
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
+import sdm_1d_kid.pympdata_driver.common as cmn
 from sdm_1d_kid.pympdata_driver.arakawa_c import arakawa_c
 
 
@@ -45,6 +45,7 @@ class Settings:
         is_exner_novapour_uniformrho: bool | None = False,
         is_approx_drhod_dz: bool | None = False,
     ):
+        ### General Settings
         self.dt = dt
         self.dz = dz
 
@@ -52,19 +53,23 @@ class Settings:
         self.z_max = z_max
         self.t_max = t_max
 
-        self.qv0 = interp1d(
-            (0, 740, 3260), (0.015, 0.0138, 0.0024), fill_value="extrapolate"
+        ### Set Time-Varying Updraught
+        rhod_w_const = wmax_const
+        self.t_1 = tscale_const
+        self.rhod_w = lambda t: (
+            rhod_w_const * np.sin(np.pi * t / self.t_1) if t < self.t_1 else 0
         )
-        self._th = interp1d(
-            (0, 740, 3260), (297.9, 297.9, 312.66), fill_value="extrapolate"
-        )
+
+        ### Set (Initial) Thermodynamic Profile
+        self.qv0 = cmn.qvap_initial_condition()
+        self._th = cmn.theta_initial_condition()
 
         self.thd = lambda z, qv: formulae.th_dry(self._th(z), qv)
 
-        z_points = np.arange(0, self.z_max + self.dz / 2, self.dz / 2)
-
         def zpos(z):
             return np.where(z < 0, 0, z)  # deal with z < 0 like it is z == 0
+
+        z_points = np.arange(0, self.z_max + self.dz / 2, self.dz / 2)
 
         if is_exner_novapour or is_exner_novapour_uniformrho:
             # note: not in the paper,
@@ -109,15 +114,13 @@ class Settings:
         else:
             # note: not in the paper,
             # https://github.com/BShipway/KiD/tree/master/src/physconst.f90#L43
-            def drhod_dz(z, rhod):
-                T = formulae.temperature(rhod[0], self.thd(z, self.qv0(z)))
-                p = formulae.pressure(rhod[0], T, self.qv0(z))
-                drhod_dz = formulae.drho_dz(const.g, p, T, self.qv0(z), const.lv)
-                if not is_approx_drhod_dz:  # to resolve issue #335
-                    qv = self.qv0(z)
-                    dqv_dz = Derivative(self.qv0)(z)
-                    drhod_dz = drhod_dz / (1 + qv) - rhod * dqv_dz / (1 + qv) ** 2
-                return drhod_dz
+            drhod_dz = cmn.hydrostatic_equilibrium(
+                formulae.temperature,
+                formulae.pressure,
+                self.thd,
+                self.qv0,
+                is_approx_drhod_dz,
+            )
 
             rhod0 = formulae.rho_d(p_surf, self.qv0(0), self._th(0))
             rhod_solution = solve_ivp(
@@ -136,12 +139,6 @@ class Settings:
             self.press = lambda z, qv: formulae.pressure(
                 self.rhod(zpos(z)), self.temp(zpos(z)), qv
             )
-
-        rhod_w_const = wmax_const
-        self.t_1 = tscale_const
-        self.rhod_w = lambda t: (
-            rhod_w_const * np.sin(np.pi * t / self.t_1) if t < self.t_1 else 0
-        )
 
         self.nz_vec = arakawa_c.z_vector_coord((self.nz,))
         self.press0 = lambda z: self.press(z, self.qv0(zpos(z)))
