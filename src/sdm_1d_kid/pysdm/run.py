@@ -44,7 +44,7 @@ def main(config_filename):
     ### --- load configuration --- ###
     with open(config_filename) as config_file:
         cnfg = yaml.safe_load(config_file)
-    outputdir = Path(cnfg["outputdata"]["outputdir"])
+    outputdir = Path(cnfg["outputdata"]["outputdir"]).resolve()
 
     if not outputdir.is_dir():
         raise ValueError("Cannot run PySDM: directory for outputdata doesn't exist")

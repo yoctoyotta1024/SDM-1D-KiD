@@ -38,12 +38,13 @@ def main(
     output = kid.run().products
     for variable, values in output.items():
         assert isinstance(values, np.ndarray)
-        file = outputdata["outputdir"] / f"{variable}.npy".replace(" ", "_")
+        outputdir = Path(outputdata["outputdir"]).resolve()
+        file = outputdir / f"{variable}.npy".replace(" ", "_")
         np.save(file, values)
     print("-----------------------------------------------")
 
     print("--- Quick-plotting Results ---")
-    assert Path(figpath).exists(), "The specified figpath does not exist."
+    assert figpath.exists(), "The specified figpath does not exist."
     assert run_name, "The run_name cannot be empty."
     qpm.quickplot_moisture(
         outputdata,
