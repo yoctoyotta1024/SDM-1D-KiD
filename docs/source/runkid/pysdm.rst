@@ -1,0 +1,79 @@
+Running the 1-D KiD with PySDM
+================================
+
+The 1-D KiD can be run with PySDM, using PyMPDATA as the thermodynamic driver
+from a backend within the PySDM repository.
+
+Running PySDM
+---------------
+
+The script ``scripts/run_pysdm.py`` can be used to run the entire workflow
+for an ensemble of runs of the PySDM 1-D KiD. For each member of the
+ensemble, it consists of 4 stages:
+
+1. :ref:`generating inputfiles<do_inputfiles_pysdm>`
+2. :ref:`running, i.e. time-stepping, the PySDM 1-D KiD model<do_run_model_pysdm>`
+3. :ref:`post-processing the PySDM 1-D KiD output<do_postprocess_pysdm>`
+4. :ref:`plotting "quicklooks" of the post-processed results<do_plot_results_pysdm>`
+
+Each stage can be turned on (the default is off) by calling ``run_pysdm.py``
+with the associated flag for that stage, e.g. to run all the stages for
+an ensemble called "your_ensemble" consisting of 3 runs you would do:
+
+.. code-block:: console
+
+  $ uv run python ./scripts/run_pysdm.py /path/to/your/build "your_ensemble" 3 \
+      --do_inputfiles --do_run_model --do_postprocess --do_plot_results
+
+To make things potentially easier, you can also choose to call this script through
+the bash script ``run_sdm_1d_kid.sh``:
+
+.. code-block:: console
+
+  $ ./scripts/bash/run_sdm_1d_kid.sh [machine] [model] [run_flags] [path2sdm1dkid] [path2build] [python]
+
+
+E.g. on Levante:
+
+.. code-block:: console
+
+  $ ./scripts/bash/run_sdm_1d_kid.sh levante pysdm \
+       "--do_inputfiles --do_run_model --do_postprocess --do_plot_results" \
+       ./ ./build $(uv run which python)
+
+The following sections describe each stage in a bit more detail.
+
+
+.. _do_inputfiles_pysdm:
+
+Generating Inputfiles
+~~~~~~~~~~~~~~~~~~~~~~~
+
+For PySDM, the input file for each run in your ensemble is a configuration YAML
+file. You can generate these for a whole ensemble with:
+
+.. code-block:: console
+
+  $  uv run python ./scripts/run_pysdm.py /path/to/your/build "your_ensemble" 3 --do_inputfiles
+
+
+This will also make some directories so that you can run the model.
+
+
+.. _do_run_model_pysdm:
+
+Running, i.e. Time-stepping, the Model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+###WIP
+
+.. _do_postprocess_pysdm:
+
+Post-Processing the Output
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+###WIP
+
+.. _do_plot_results_pysdm:
+
+Plotting the "Quicklooks"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+###WIP

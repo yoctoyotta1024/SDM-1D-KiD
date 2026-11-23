@@ -10,4 +10,5 @@ Next Up
    :maxdepth: 1
 
    cleo
+   pysdm
    bulk_scheme

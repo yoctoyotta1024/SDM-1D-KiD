@@ -40,6 +40,11 @@ bulk_ensemble_name="testing"
 bulk_ensemble_size=2
 ### ---------------------------------------------------- ###
 
+### ------- extra run parameters for pysdm scheme ------- ###
+pysdm_ensemble_name="testing"
+pysdm_ensemble_size=2
+### ---------------------------------------------------- ###
+
 ### ---------------------------------------------------- ###
 ### ---------------------------------------------------- ###
 ### ---------------------------------------------------- ###
@@ -79,6 +84,11 @@ if [[ "${model}" == "bulk" ]]; then
   echo "Bulk ensemble name=${bulk_ensemble_name}"
   echo "Bulk ensemble size=${bulk_ensemble_size}"
 fi
+
+if [[ "${model}" == "pysdm" ]]; then
+  echo "Bulk ensemble name=${pysdm_ensemble_name}"
+  echo "Bulk ensemble size=${pysdm_ensemble_size}"
+fi
 echo "### ------------------------------------------- ###"
 ### ---------------------------------------------------- ###
 
@@ -100,6 +110,18 @@ if [[ "${model}" == "bulk" ]]; then
     ${path2build} \
     ${bulk_ensemble_name} \
     ${bulk_ensemble_size} \
+    ${run_flags}"
+  echo ${cmd}
+  eval ${cmd}
+fi
+### ---------------------------------------------------- ###
+
+### --------------- run pysdm scheme 1-D KiD ------------ ###
+if [[ "${model}" == "pysdm" ]]; then
+  cmd="${python} ${path2sdm1dkid}/scripts/run_pysdm.py \
+    ${path2build} \
+    ${pysdm_ensemble_name} \
+    ${pysdm_ensemble_size} \
     ${run_flags}"
   echo ${cmd}
   eval ${cmd}

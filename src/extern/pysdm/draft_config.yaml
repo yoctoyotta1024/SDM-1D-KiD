@@ -1,0 +1,65 @@
+# ----- CLEO -----
+# File: draft_config.yaml
+# Project: config
+# Created Date: Monday 23rd November 2026
+# Author: Clara Bayley (CB)
+# Additional Contributors:
+# -----
+# License: BSD 3-Clause "New" or "Revised" License
+# https://opensource.org/licenses/BSD-3-Clause
+# -----
+# Copyright (c) 2023 MPI-M, Clara Bayley
+# -----
+# File Description:
+# Draft configuration file for PySDM SDM coupled to a pythonic dynamics driver.
+# Note: A real configuration file can be made with
+# ./src/sdm_1d_kid/pysdm/inputfiles.py e.g. via ./scripts/run_pysdm.py
+#
+
+### Ensemble of Runs Setup ###
+run_ensemble:
+  ensemble_name: XXX                          # name of ensemble of runs
+  ensemble_size: XXX                          # number of runs in ensemble
+  run_name: XXX                               # name of this run in the ensemble
+
+### Superdroplet Initialisation Parameters ###
+generate_inputfiles:
+  superdroplet_initialisation:
+    geomean : XXX                             # geometric mean radius of initial droplet spectrum [m]
+    geosig : XXX                              # geometric standard deviation of initial droplet spectrum
+    numconc : XXX                             # number conc. of initial droplet spectrum [m^-3]
+    nsupers_pergbx: XXX                       # no. of super-droplets per gridbox to initialise
+    alpha: XXX                                # sampling param: 0 -> const xi, 1 -> xi follows spectrum
+    alpha_seed: XXX                           # seed to random number generator for alpha sampling (an integer)
+
+### KiD Dynamics Parameters (default initial atmospheric profile is hydrostatic equilibrium) ###
+kid_config:
+  zmin: XXX                                   # minimum z-coord of domain [m]
+  zmax: XXX                                   # maximum z-coord of domain [m]
+  zdelta: XXX                                 # z-spacing of gridboxes in domain [m]
+  wmax_const: XXX                             # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
+  tscale_const: XXX                           # timescale of sinusoid [s]
+  psurf_hpa: XXX                              # surface pressure [hPa]
+  ### WIP allow dynamics settings in PySDM
+  is_exner_novapour: False                    # use Exner profile without accounting for vapour (Shipway and Hill 2012)
+  is_exner_novapour_uniformrho: False         # use Exner also with constant air density (Hill et al. 2023)
+  is_approx_drhod_dz: XXX                     # ignore water vapour component in hydrostatic equilibrium profile
+  timestep: XXX                               # == COUPLTSTEP, time between dynamic couplings [s]
+  t_end: XXX                                  # == T_END, time span of integration from 0s to T_END [s]
+
+### SDM Runtime Parameters ###
+sdm_settings:
+  is_precip: XXX                              # enable/disable precipitation scheme
+  kappa: XXX                                  # Aerosol hygroscopicity factor
+  n_iters: XXX                                # number of iterations to run
+
+### Output Parameters ###
+outputdata:
+  outputdir: /path/to/your/bin/rawnumpys_dir/ # path to output directory
+  output_timestep: XXX                        # time between SDM observations [s]
+  cloud_water_radius_range:                   # range of droplet sizes to identify as "cloud" water [m]
+    - XXX
+    - XXX
+  rain_water_radius_range:                    # range of droplet sizes to identify as "rain" water [m]
+    - XXX
+    - XXX
