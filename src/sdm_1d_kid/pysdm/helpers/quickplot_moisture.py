@@ -63,7 +63,6 @@ def quickplot_moisture(
         colors=color,
     )
 
-    fig.tight_layout()
     plot_utilities.save_figure(fig, figpath, figname)
 
 
@@ -113,17 +112,17 @@ def plot_with_iterations(
 
     last_t = 0
     for i, t in enumerate(output["t"]):
-        x, z = output[var][i], output["z"].copy()
+        x, z = output[var][:, i], output["z"].copy()
         convert_to(z, si.km)
-        params = {"color": "black"}
         for line_t, line_s in line.items():
             if last_t < line_t * si.min <= t:
-                params["ls"] = line_s
                 ax2.plot(x, z, color=colors[line_t])
                 if vmin is not None and vmax is not None:
-                    ax1.axvline(t, ymin=vmin, ymax=vmax, color=colors[line_t])
+                    ax1.axvline(
+                        t, ymin=vmin, ymax=vmax, color=colors[line_t], ls=line_s
+                    )
                 else:
-                    ax1.axvline(t, color=colors[line_t])
+                    ax1.axvline(t, color=colors[line_t], ls=line_s)
         last_t = t
 
     return fig

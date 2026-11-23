@@ -84,7 +84,7 @@ class PySDMKiDDynamics:
             return z_above_reservoir
 
         ### initialise options and MPDATA
-        options = cmn.get_options(is_pysdm=True)
+        options = cmn.get_options(is_accurate=True)
         mpdata = MPDATA_1D(
             nz=settings.nz,
             dt=settings.dt,

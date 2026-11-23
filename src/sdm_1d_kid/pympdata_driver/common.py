@@ -18,10 +18,10 @@ both should be the same to run the same KiD
 """
 
 
-def get_options(is_pysdm=False):
+def get_options(is_accurate=False):
     from PyMPDATA import Options
 
-    if is_pysdm:
+    if is_accurate:
         return Options(
             n_iters=3,
             infinite_gauge=True,

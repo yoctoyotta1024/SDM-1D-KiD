@@ -55,7 +55,7 @@ def main(config_filename):
     sdm_settings = cnfg["sdm_settings"]
     outputdata = cnfg["outputdata"]
     run_name = cnfg["run_ensemble"]["run_name"]
-    quickplotdir = outputdir
+    quickplotdir = outputdir.parent
 
     if not quickplotdir.is_dir():
         raise ValueError("Cannot run PySDM: directory for quickplots doesn't exist")
