@@ -89,7 +89,8 @@ def exner_function_thermodynamics(
 ):
     """
     Returns function for initial thermodynamics profiles as in
-    Shipway and Hill (2012) and Hill et al. (2023).
+    Shipway and Hill (2012) and Hill et al. (2023), except for pressure
+    where we account for vapour to match PySDM (see below).
 
     If ``is_exner_novapour_uniformrho==False``, profiles calculated as in
     original KiD setup of Shipway and Hill (2012).
@@ -144,7 +145,12 @@ def exner_function_thermodynamics(
         return z2exner(z, return_temp=True)
 
     def press(z, qv):
-        return z2exner(z, return_press=True)
+        # Exner gives dry-air pressure; to be consistent with PySDM
+        # (see state_variable_triplet.p), we add the vapour partial pressure here
+        # (q_v = eps * p_v / p_d) to calculate the total pressure.
+        # *Note:* this is different to the original KiD setup which uses the
+        # dry air pressure (z2exner(z, return_press=True)) as the total pressure.
+        return z2exner(z, return_press=True) * (1 + qv / const.eps)
 
     if is_exner_novapour_uniformrho:
         rhod0 = 1.0 * np.ones_like(z_points)  # [kg / m^3]

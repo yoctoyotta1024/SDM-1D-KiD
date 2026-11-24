@@ -59,7 +59,7 @@ class Settings:
         self.rhod_w = lambda t: rhod_w_const * np.sin(np.pi * t / t_1) if t < t_1 else 0
 
         ### Set (Initial) Thermodynamic Profile
-        self.qv0 = cmn.qvap_initial_condition()
+        self.qv0 = cmn.qvap_initial_condition(particle_reservoir_depth=-self.z_min)
         self._th = cmn.theta_initial_condition()
 
         self.thd = lambda z, qv: formulae.th_dry(self._th(z), qv)

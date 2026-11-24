@@ -120,9 +120,8 @@ class Settings:
                 raise NotImplementedError(
                     "PySDM derives T directly from rhod, so uniform rhod=1 gives wrong temperatures"
                 )
-            self.thd = lambda z, qv=None: self._th(
-                z
-            )  # treat as if no vapour: theta = theta_dry
+            # treat theta as if no vapour in exner setups: theta = theta_dry
+            self.thd = lambda z, qv=None: self._th(z)
             _, _, rhod = cmn.exner_function_thermodynamics(
                 p_surf, self._th, is_exner_novapour_uniformrho, z_points=z_points
             )

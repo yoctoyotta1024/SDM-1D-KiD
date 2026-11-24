@@ -73,7 +73,7 @@ class MPDATA:
             )
             if k == "qvap":
                 data = qv_of_zZ_at_t0(arakawa_c.z_scalar_coord(grid))
-                bcs = (Constant(value=data[0]),)
+                bcs = (Extrapolated(dim=INNER),)
             else:
                 data = np.zeros(grid)
                 bcs = (Constant(value=0),)
