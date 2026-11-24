@@ -339,18 +339,22 @@ def main():
             ensemble_name,
             ensemble_size,
         )
+        logger.info("generating inputfiles -> completed")
 
     if do_run_model:
         logger.info("running Cleo 1-D KiD model")
         run_model(path2build, tmppath)
+        logger.info("running Cleo 1-D KiD model -> completed")
 
     if do_postprocess:
         logger.info("post-processing Cleo 1-D KiD output")
         postprocess(tmppath, binpath, postprocpath)
+        logger.info("post-processing Cleo 1-D KiD output -> completed")
 
     if do_plot_results:
         logger.info("plotting results of Cleo 1-D KiD")
         # plot_results() ###WIP
+        logger.info("plotting results of Cleo 1-D KiD -> completed")
 
     if (
         not do_inputfiles

@@ -220,18 +220,22 @@ def main():
             path2ensemble, tmppath, binpath, postprocpath, ensemble_name, ensemble_size
         )
         inputfiles(tmppath, binpath, ensemble_name, ensemble_size)
+        logger.info("generating inputfiles -> completed")
 
     if do_run_model:
         logger.info("running PySDM 1-D KiD model")
         run_model(tmppath)
+        logger.info("running PySDM 1-D KiD model -> completed")
 
     if do_postprocess:
         logger.info("post-processing PySDM 1-D KiD output")
         postprocess(binpath, postprocpath)
+        logger.info("post-processing PySDM 1-D KiD output -> completed")
 
     if do_plot_results:
         logger.info("plotting results of PySDM 1-D KiD")
         # plot_results() ###WIP
+        logger.info("plotting results of PySDM 1-D KiD -> completed")
 
     if (
         not do_inputfiles
