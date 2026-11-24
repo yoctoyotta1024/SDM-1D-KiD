@@ -18,8 +18,6 @@ https://github.com/open-atmos/PySDM/blob/main/examples/PySDM_examples/featured/S
 between v3.1.0 and v3.1.1
 """
 
-from collections.abc import Iterable
-
 import numpy as np
 from PySDM import Formulae
 from PySDM.dynamics import condensation
@@ -33,43 +31,29 @@ import sdm_1d_kid.pympdata_driver.common as cmn
 
 
 class Settings:
-    def __dir__(self) -> Iterable[str]:
-        return (
-            "n_sd_per_gridbox",
-            "p_surf",
-            "kappa",
-            "rho_times_w_1",
-            "particles_per_volume_STP",
-            "dt",
-            "dz",
-            "precip",
-            "z_max",
-            "t_max",
-            "cloud_water_radius_range",
-            "rain_water_radius_range",
-            "r_bins_edges_dry",
-            "r_bins_edges",
-        )
-
     def __init__(
         self,
-        *,
-        n_sd_per_gridbox: int,
-        p_surf: float = 1000 * si.hPa,
-        kappa: float = 1,
-        rho_times_w_1: float = 2 * si.m / si.s * si.kg / si.m**3,
-        is_approx_drhod_dz: bool = False,
-        particles_per_volume_STP: int = 50 / si.cm**3,
-        dt: float = 1 * si.s,
-        dz: float = 25 * si.m,
+        dt: float,
+        dz: float,
+        wmax_const: float = 3 * si.m / si.s * si.kg / si.m**3,
+        tscale_const: float = 600 * si.s,
+        t_max: float = 15 * si.minutes,
         z_max: float = 3000 * si.m,
+        p_surf: float = 1000 * si.hPa,
+        is_approx_drhod_dz: bool = False,
+        n_sd_per_gridbox: int = 128,
+        particles_per_volume_STP: int = 50 / si.cm**3,
+        m_mode=0.08 / 2 * si.um,
+        s_geom=1.4,
+        kappa: float = 0.9,
         z_part: tuple | None = None,
-        t_max: float = 60 * si.minutes,
-        precip: bool = True,
         enable_condensation: bool = True,
+        precip: bool = True,
         formulae: Formulae = None,
-        save_spec_and_attr_times=(),
         collision_kernel=None,
+        save_spec_and_attr_times=(),
+        cloud_water_radius_range=(1 * si.um, 50 * si.um),
+        rain_water_radius_range=(50 * si.um, np.inf * si.um),
     ):
         ### General Settings
         self.dt = dt
@@ -87,23 +71,24 @@ class Settings:
         self.enable_condensation = enable_condensation
         self.z_part = z_part
         self.collision_kernel = collision_kernel or Geometric(collection_efficiency=1)
+        self.cloud_water_radius_range = cloud_water_radius_range
+        self.rain_water_radius_range = rain_water_radius_range
+        self.save_spec_and_attr_times = save_spec_and_attr_times
 
         ### Set Time-Varying Updraught
-        self.rho_times_w_1 = rho_times_w_1
-        t_1 = 600 * si.s
-        self.rho_times_w = lambda t: (
-            rho_times_w_1 * np.sin(np.pi * t / t_1) if t < t_1 else 0
-        )
-        apprx_w1 = rho_times_w_1 / self.formulae.constants.rho_STP
+        rhod_w_const = wmax_const
+        t_1 = tscale_const
+        self.rhod_w = lambda t: rhod_w_const * np.sin(np.pi * t / t_1) if t < t_1 else 0
 
         ### Initial PySDM SDM Superdroplets Conditions
+        apprx_w1 = rhod_w_const / self.formulae.constants.rho_STP
         self.particle_reservoir_depth = (
             (2 * apprx_w1 * t_1 / np.pi) // self.dz + 1
         ) * self.dz
         self.wet_radius_spectrum_per_mass_of_dry_air = spectra.Lognormal(
             norm_factor=particles_per_volume_STP / self.formulae.constants.rho_STP,
-            m_mode=0.08 / 2 * si.um,
-            s_geom=1.4,
+            m_mode=m_mode,
+            s_geom=s_geom,
         )
 
         ### Set (Initial) Thermodynamic Profile
@@ -122,8 +107,13 @@ class Settings:
 
         self.thd = thd
 
-        z_span = (-self.particle_reservoir_depth, self.z_max)
-        z_points = np.linspace(*z_span, 2 * self.nz + 1)
+        ### z position and function to deal with reservoir below surface
+        self.z_min = -self.particle_reservoir_depth
+        z_points = np.linspace(self.z_min, self.z_max, 2 * self.nz + 1)
+
+        ### function to convert dimensionless vertical coordinate into
+        ### height above reservoir, i.e. relative to surface [m]
+        self.zposition = lambda zZ: zZ * (self.nz * self.dz) + self.z_min
 
         drhod_dz = cmn.hydrostatic_equilibrium(
             self.formulae.state_variable_triplet.T,
@@ -140,7 +130,7 @@ class Settings:
         )
         rhod_solution = solve_ivp(
             fun=drhod_dz,
-            t_span=z_span,
+            t_span=(self.z_min, self.z_max),
             y0=np.asarray((self.rhod0,)),
             t_eval=z_points,
             max_step=dz / 2,
@@ -170,9 +160,6 @@ class Settings:
             self.number_of_bins + 1,
             endpoint=True,
         )
-        self.cloud_water_radius_range = [1 * si.um, 50 * si.um]
-        self.rain_water_radius_range = [50 * si.um, np.inf * si.um]
-        self.save_spec_and_attr_times = save_spec_and_attr_times
 
     @property
     def n_sd(self):

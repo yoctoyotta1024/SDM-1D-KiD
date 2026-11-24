@@ -45,30 +45,55 @@ from sdm_1d_kid.pysdm.helpers.settings import Settings
 class PySDMKiDDynamics:
     def __init__(self, kid_config, sds_init, sdm_settings, outputdata, backend=CPU):
         ### read in config directly to settings
-        dt_out = outputdata["output_timestep"]
-        save_spec_and_attr_times = np.arange(0, kid_config["t_end"] + dt_out, dt_out)
+        self.do_save_spectrum = outputdata["do_save_spectrum"]
+        self.do_save_attrs = outputdata["do_save_attrs"]
+        xi_by_dry_air_density = sds_init["xi_by_dry_air_density"]
         rng = np.random.default_rng(int(sds_init["alpha_seed"]))
         formulae = Formulae(seed=int(rng.integers(0, 2**32)))
+        dt_out = outputdata["output_timestep"]
+        save_spec_and_attr_times = np.arange(0, kid_config["t_end"] + dt_out, dt_out)
+        cloud_water_radius_range = tuple(
+            float(r) * si.m for r in outputdata["cloud_water_radius_range"]
+        )
+        rain_water_radius_range = tuple(
+            float(r) * si.m for r in outputdata["rain_water_radius_range"]
+        )
         settings = Settings(
-            n_sd_per_gridbox=sds_init["nsupers_pergbx"],
-            p_surf=kid_config["psurf_hpa"] * si.hPa,
-            kappa=sdm_settings["kappa"],
-            rho_times_w_1=kid_config["wmax_const"] * si.m / si.s * si.kg / si.m**3,
-            is_approx_drhod_dz=kid_config["is_approx_drhod_dz"],
-            particles_per_volume_STP=sds_init["numconc"] / si.m**3,
             dt=kid_config["timestep"] * si.s,
             dz=kid_config["zdelta"] * si.m,
-            z_max=kid_config["zmax"] * si.m,
+            wmax_const=kid_config["wmax_const"] * si.m / si.s * si.kg / si.m**3,
+            tscale_const=kid_config["tscale_const"] * si.s,
             t_max=kid_config["t_end"] * si.s,
+            z_max=kid_config["zmax"] * si.m,
+            p_surf=kid_config["psurf_hpa"] * si.hPa,
+            is_approx_drhod_dz=kid_config["is_approx_drhod_dz"],
+            n_sd_per_gridbox=sds_init["nsupers_pergbx"],
+            particles_per_volume_STP=sds_init["numconc"] / si.m**3,
+            m_mode=float(sds_init["geomean"]) * si.m,
+            s_geom=float(sds_init["geosig"]),
+            kappa=sdm_settings["kappa"],
             precip=sdm_settings["is_precip"],
             formulae=formulae,
-            save_spec_and_attr_times=save_spec_and_attr_times,
             collision_kernel=None,
+            save_spec_and_attr_times=save_spec_and_attr_times,
+            cloud_water_radius_range=cloud_water_radius_range,
+            rain_water_radius_range=rain_water_radius_range,
         )
+
+        # *NOTE:*(!)must match above SI units^
+        self.written_kid_config_units = {
+            "zmax": "m",
+            "zdelta": "m",
+            "timestep": "s",
+            "t_end": "s",
+            "wmax_const": "kg m^-2 s^-1 (peak rho_d*w)",
+            "tscale_const": "s",
+            "psurf_hpa": "hPa",
+        }
 
         ### Hard-coded settings
         self.nt = settings.nt
-        self.z0 = -settings.particle_reservoir_depth
+        self.z_min = settings.z_min
         self.save_spec_and_attr_times = settings.save_spec_and_attr_times
         self.number_of_bins = settings.number_of_bins
         self.particulator = None
@@ -79,27 +104,24 @@ class PySDMKiDDynamics:
             size=(settings.z_max + settings.particle_reservoir_depth,),
         )
 
-        def zZ_to_z_above_reservoir(zZ):
-            z_above_reservoir = zZ * (settings.nz * settings.dz) + self.z0
-            return z_above_reservoir
-
         ### initialise options and MPDATA
         options = cmn.get_options(is_accurate=True)
         mpdata = MPDATA_1D(
             nz=settings.nz,
             dt=settings.dt,
             options=options,
-            advector_of_t=lambda t: settings.rho_times_w(t) * settings.dt / settings.dz,
-            advectee_of_zZ_at_t0=lambda zZ: settings.qv0(zZ_to_z_above_reservoir(zZ)),
-            g_factor_of_zZ=lambda zZ: settings.rhod(zZ_to_z_above_reservoir(zZ)),
+            advector_of_t=lambda t: settings.rhod_w(t) * settings.dt / settings.dz,
+            advectee_of_zZ_at_t0=lambda zZ: settings.qv0(settings.zposition(zZ)),
+            g_factor_of_zZ=lambda zZ: settings.rhod(settings.zposition(zZ)),
         )
 
+        ### initialise PySDM
         env = Kinematic1D(
             dt=settings.dt,
             mesh=self.mesh,
             thd_of_z=settings.thd,
             rhod_of_z=settings.rhod,
-            z0=-settings.particle_reservoir_depth,
+            z0=settings.z_min,
             backend=backend(formulae=settings.formulae, n_dims=1),
             solvers=mpdata,
         )
@@ -145,6 +167,14 @@ class PySDMKiDDynamics:
             z_part=settings.z_part,
             n_sd=settings.n_sd,
         )
+
+        if not xi_by_dry_air_density:
+            rhod = env["rhod"].to_ndarray()
+            renormalisation_factor = (
+                settings.formulae.constants.rho_STP / rhod[self.attributes["cell id"]]
+            )
+            self.attributes["multiplicity"] *= renormalisation_factor
+
         self.products += [
             PySDM_products.WaterMixingRatio(
                 name="cloud water mixing ratio",
@@ -241,6 +271,24 @@ class PySDMKiDDynamics:
                     (self.mesh.grid[-1], self.number_of_bins, number_of_time_sections)
                 )
 
+        ### print configuration
+        key = f"dz={settings.dz}, dt={settings.dt}, options={options}"
+        print(f"Simulating {settings.nt} timesteps using {key}")
+        print(self._format_pysdm_kid_config(kid_config, nz=settings.nz, nt=settings.nt))
+
+    def _format_pysdm_kid_config(self, kid_config, nz=None, nt=None):
+        """Return KiD configuration as aligned 'name = value [units]' lines for printing."""
+        width = max(len(key) for key in kid_config)
+        lines = ["KiDDynamics configuration:"]
+        for key, value in kid_config.items():
+            units = self.written_kid_config_units.get(key)
+            lines.append(
+                f"  {key:<{width}} = {value}" + (f" [{units}]" if units else "")
+            )
+        if nz is not None and nt is not None:
+            lines.append(f"  {'(derived)':<{width}} = {nz} gridboxes, {nt} timesteps")
+        return "\n".join(lines)
+
     @staticmethod
     def add_collision_dynamic(dynamics, settings, _):
         dynamics.append(
@@ -286,8 +334,10 @@ class PySDMKiDDynamics:
                     - np.array(self.save_spec_and_attr_times)
                 )
             )
-            self.save_spectrum(save_index)
-            self.save_attributes()
+            if self.do_save_spectrum:
+                self.save_spectrum(save_index)  # droplet size/mass distribs
+            if self.do_save_attrs:
+                self.save_attributes()  # superdroplet attributes
 
     def run(self):
         mesh = self.particulator.mesh
@@ -297,8 +347,8 @@ class PySDMKiDDynamics:
             0, self.nt * self.particulator.dt, self.nt + 1, endpoint=True
         )
         self.output_products["z"] = np.linspace(
-            self.z0 + mesh.dz / 2,
-            self.z0 + (mesh.grid[-1] - 1 / 2) * mesh.dz,
+            self.z_min + mesh.dz / 2,
+            self.z_min + (mesh.grid[-1] - 1 / 2) * mesh.dz,
             mesh.grid[-1],
             endpoint=True,
         )

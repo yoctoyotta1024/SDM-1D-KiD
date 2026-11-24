@@ -31,6 +31,7 @@ generate_inputfiles:
     nsupers_pergbx: XXX                       # no. of super-droplets per gridbox to initialise
     alpha: XXX                                # sampling param: 0 -> const xi, 1 -> xi follows spectrum
     alpha_seed: XXX                           # seed to random number generator for alpha sampling (an integer)
+    xi_by_dry_air_density: XXX                # if True, initialise superdroplets according to dry air density profile
 
 ### KiD Dynamics Parameters (default initial atmospheric profile is hydrostatic equilibrium) ###
 kid_config:
@@ -54,6 +55,8 @@ sdm_settings:
 outputdata:
   outputdir: /path/to/your/bin/rawnumpys_dir/ # path to output directory
   output_timestep: XXX                        # time between SDM observations [s]
+  do_save_spectrum: True                      # save DSDs during run (*NOTE:* this enables you to write them to file but doesn't do it)
+  do_save_attrs: False                        # save raw SDs during run (*NOTE:* this enables you to write to them to file but doesn't do it)
   cloud_water_radius_range:                   # range of droplet sizes to identify as "cloud" water [m]
     - XXX
     - XXX

@@ -88,7 +88,7 @@ class KiDDynamics:
             is_approx_drhod_dz=is_approx_drhod_dz,
         )
 
-        options = cmn.get_options()
+        options = cmn.get_options(is_accurate=True)
         self.mpdata = MPDATA(
             nz=self.settings.nz,
             dt=self.settings.dt,

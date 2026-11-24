@@ -55,10 +55,8 @@ class Settings:
 
         ### Set Time-Varying Updraught
         rhod_w_const = wmax_const
-        self.t_1 = tscale_const
-        self.rhod_w = lambda t: (
-            rhod_w_const * np.sin(np.pi * t / self.t_1) if t < self.t_1 else 0
-        )
+        t_1 = tscale_const
+        self.rhod_w = lambda t: rhod_w_const * np.sin(np.pi * t / t_1) if t < t_1 else 0
 
         ### Set (Initial) Thermodynamic Profile
         self.qv0 = cmn.qvap_initial_condition()
@@ -66,10 +64,12 @@ class Settings:
 
         self.thd = lambda z, qv: formulae.th_dry(self._th(z), qv)
 
-        def zpos(z):
-            return np.where(z < 0, 0, z)  # deal with z < 0 like it is z == 0
-
+        ### z position and function to deal with reservoir below surface
         z_points = np.arange(0, self.z_max + self.dz / 2, self.dz / 2)
+
+        ### function to deal with z < 0 like it is z == 0
+        ### so returns z height either above or at surface [m]
+        zpositive = lambda z: np.where(z < 0, 0, z)
 
         if is_exner_novapour or is_exner_novapour_uniformrho:
             # note: not in the paper,
@@ -104,12 +104,12 @@ class Settings:
                 else:
                     return exner
 
-            self.temp = lambda z: z2exner(zpos(z), return_temp=True)
-            self.press = lambda z, qv: z2exner(zpos(z), return_press=True)
-            self.rhod = lambda z: z2exner(zpos(z), return_rho=True)
+            self.temp = lambda z: z2exner(zpositive(z), return_temp=True)
+            self.press = lambda z, qv: z2exner(zpositive(z), return_press=True)
+            self.rhod = lambda z: z2exner(zpositive(z), return_rho=True)
             if is_exner_novapour_uniformrho:
                 rhod0 = 1.0 * np.ones_like(z_points)  # [kg / m^3]
-                self.rhod = lambda z: interp1d(z_points, rhod0)(zpos(z))
+                self.rhod = lambda z: interp1d(z_points, rhod0)(zpositive(z))
 
         else:
             # note: not in the paper,
@@ -132,16 +132,16 @@ class Settings:
             )
             assert rhod_solution.success
 
-            self.rhod = lambda z: interp1d(z_points, rhod_solution.y[0])(zpos(z))
+            self.rhod = lambda z: interp1d(z_points, rhod_solution.y[0])(zpositive(z))
             self.temp = lambda z: formulae.temperature(
-                self.rhod(zpos(z)), self.thd(zpos(z), self.qv0(zpos(z)))
+                self.rhod(zpositive(z)), self.thd(zpositive(z), self.qv0(zpositive(z)))
             )
             self.press = lambda z, qv: formulae.pressure(
-                self.rhod(zpos(z)), self.temp(zpos(z)), qv
+                self.rhod(zpositive(z)), self.temp(zpositive(z)), qv
             )
 
         self.nz_vec = arakawa_c.z_vector_coord((self.nz,))
-        self.press0 = lambda z: self.press(z, self.qv0(zpos(z)))
+        self.press0 = lambda z: self.press(z, self.qv0(zpositive(z)))
 
     @property
     def nz(self):

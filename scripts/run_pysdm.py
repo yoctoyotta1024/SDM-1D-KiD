@@ -102,6 +102,9 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
     alpha_seeds = generate_random_alpha_seeds(
         ensemble_size
     )  # seeds for random number generator for alpha sampling (seed = an integer)
+    xi_by_dry_air_density = (
+        False  # if True, initialise superdroplets according to dry air density profile
+    )
 
     ### SDM Runtime Parameter
     kappa = 0.9  # Aerosol hygroscopicity factor
@@ -119,11 +122,11 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
     ### Output Parameters ###
     output_timestep = 1.25  # time between SDM observations [s]
     cloud_water_radius_range = (
-        2e-6,
-        50e-6,
+        1e-6,
+        40e-6,
     )  # range of droplet sizes to identify as "cloud" water [m]
     rain_water_radius_range = (
-        50e-6,
+        cloud_water_radius_range[1],
         np.inf,
     )  # range of droplet sizes to identify as "rain" water [m]
 
@@ -150,6 +153,7 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
             "nsupers_pergbx": nsupers_pergbx,
             "alpha": alpha,
             "alpha_seed": alpha_seeds[n],
+            "xi_by_dry_air_density": xi_by_dry_air_density,
             "zmax": zmax,
             "zdelta": zdelta,
             "wmax_const": wmax_const,

@@ -126,7 +126,7 @@ def inputfiles(
         ensemble_size
     )  # seeds for random number generator for alpha sampling (seed = an integer)
     xi_by_pressure = (
-        True  # if True, initialise superdroplets according to pressure profile
+        False  # if True, initialise superdroplets according to pressure profile
     )
 
     ### KiD Dynamics

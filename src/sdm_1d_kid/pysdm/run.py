@@ -60,14 +60,6 @@ def main(config_filename):
     if not quickplotdir.is_dir():
         raise ValueError("Cannot run PySDM: directory for quickplots doesn't exist")
 
-    ###WIP Make these parameters in PySDM Settings adjustable:
-    # t_1 = 600 * si.s  (tscale_const)
-    # (xi_by_pressure) norm_factor=particles_per_volume_STP / self.formulae.constants.rho_STP,
-    # m_mode=0.08 / 2 * si.um (geomean)
-    # s_geom=1.4 (geosig)
-    # self.cloud_water_radius_range = [1 * si.um, 50 * si.um]
-    # self.rain_water_radius_range = [50 * si.um, np.inf * si.um]
-
     ### WIP add these functionalities:
     # need to use alpha (with alpha_seed i.e formulae)
     # collision_kernel = None vs. collision_kernel = Hydrodynamic()
