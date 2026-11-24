@@ -208,8 +208,27 @@ def run_model(tmppath):
             run.main(config_filename)
 
 
-def postprocess(binpath, postprocpath):
-    print("###WIP")
+def postprocess(tmppath, binpath, ensemble_name, ensemble_size, postprocpath):
+    import glob
+    import os
+
+    from sdm_1d_kid.pysdm import postprocess
+
+    config_files = sorted(
+        glob.glob(os.path.join(tmppath, f"config_{ensemble_name}_*.yaml"))
+    )
+    run_datasets = [binpath / f"{ensemble_name}_{n}" for n in range(ensemble_size)]
+
+    missing = [str(r) for r in run_datasets if not r.is_dir()]
+    run_datasets = [str(r) for r in run_datasets]
+    if not config_files or not run_datasets:
+        raise ValueError(
+            f"Cannot postprocess PySDM: no output data found in search of {binpath}"
+        )
+    elif missing:
+        raise ValueError(f"Cannot postprocess PySDM: missing output data for {missing}")
+    else:
+        postprocess.main(config_files[0], run_datasets, postprocpath=postprocpath)
 
 
 # %% ----------------------------- MAIN PROGRAM ------------------------------ #
@@ -245,7 +264,7 @@ def main():
 
     if do_postprocess:
         logger.info("post-processing PySDM 1-D KiD output")
-        postprocess(binpath, postprocpath)
+        postprocess(tmppath, binpath, ensemble_name, ensemble_size, postprocpath)
         logger.info("post-processing PySDM 1-D KiD output -> completed")
 
     if do_plot_results:

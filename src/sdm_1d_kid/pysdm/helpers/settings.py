@@ -169,18 +169,15 @@ class Settings:
         self.coalescence_adaptive = True
 
         ### PySDM Output Settings
-        self.number_of_bins = 100
+        self.number_of_bins = 128
         self.r_bins_edges_dry = np.logspace(
             np.log10(0.001 * si.um),
             np.log10(1 * si.um),
             self.number_of_bins + 1,
             endpoint=True,
         )
-        self.r_bins_edges = np.logspace(
-            np.log10(0.001 * si.um),
-            np.log10(10 * si.mm),
-            self.number_of_bins + 1,
-            endpoint=True,
+        self.r_bins_edges = np.geomspace(
+            1.0e-8 * si.m, 1.0e-2 * si.m, self.number_of_bins + 1
         )
 
     @property

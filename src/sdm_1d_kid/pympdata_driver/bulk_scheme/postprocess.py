@@ -195,28 +195,6 @@ def add_config_metadata(ds, config):
     return ds.assign_attrs(bulk_scheme_config=json.dumps(config, default=str, indent=2))
 
 
-def check_dry_density(ds, rtol=1e-3):
-    """Log whether the dry air density recomputed by MetPy ("rho_dry") matches
-    the density prescribed by the KiD driver ("rhod").
-
-    The two are calculated differently (the driver's formulae and constants vs. MetPy's
-    from p, T and qvap), so they need not agree exactly; a large difference indicates an
-    inconsistency between the driver's thermodynamics and the post-processing (e.g. units).
-    """
-    import numpy as np
-
-    reldiff = float((np.abs(ds.rho_dry - ds.rhod) / ds.rhod).max())
-    if reldiff > rtol:
-        logger.warning(
-            f"rho_dry (MetPy) differs from rhod (KiD driver) by up to {reldiff:.2e} "
-            "(relative to rhod)"
-        )
-        return False
-    else:
-        logger.info(f"rho_dry (MetPy) matches rhod (KiD driver) ({reldiff:.2e})")
-        return True
-
-
 # %% ----------------------- CREATE ENSEMBLE DATASET ------------------------- #
 def create_ensemble_dataset(run_datasets):
     """Combine bulk scheme output of an ensemble of (one or more) runs into one
@@ -264,10 +242,12 @@ def main(
         run_datasets (list): Paths to the ".zarr" dataset of each ensemble member.
         postprocpath (pathlib.Path, optional): Directory to write the dataset in.
     """
+    from sdm_1d_kid import common as cmn
+
     ensemble_name = cnfg["ensemble_name"]
     ds = create_ensemble_dataset(run_datasets).pipe(add_config_metadata, cnfg)
 
-    is_rhod_equal = check_dry_density(ds, rtol=1e-4)
+    is_rhod_equal = cmn.check_dry_density(ds, logger, rtol=1e-4)
     if is_rhod_equal:
         ds = ds.drop_vars(["rhod"], errors="ignore")
 

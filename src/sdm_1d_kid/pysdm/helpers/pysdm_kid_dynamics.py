@@ -98,6 +98,8 @@ class PySDMKiDDynamics:
         self.z_min = settings.z_min
         self.save_spec_and_attr_times = settings.save_spec_and_attr_times
         self.number_of_bins = settings.number_of_bins
+        self.r_bins_edges = settings.r_bins_edges
+        self.r_bins_edges_dry = settings.r_bins_edges_dry
         self.particulator = None
         self.output_attributes = None
         self.output_products = None
@@ -181,6 +183,10 @@ class PySDMKiDDynamics:
 
         self.products += [
             PySDM_products.WaterMixingRatio(
+                name="liquid water mixing ratio",
+                unit="g/kg",
+            ),
+            PySDM_products.WaterMixingRatio(
                 name="cloud water mixing ratio",
                 unit="g/kg",
                 radius_range=settings.cloud_water_radius_range,
@@ -204,15 +210,7 @@ class PySDMKiDDynamics:
             PySDM_products.ParticleConcentration(
                 name="na", radius_range=(0, settings.cloud_water_radius_range[0])
             ),
-            PySDM_products.MeanRadius(),
-            PySDM_products.EffectiveRadius(
-                radius_range=settings.cloud_water_radius_range
-            ),
             PySDM_products.SuperDropletCountPerGridbox(),
-            PySDM_products.AveragedTerminalVelocity(
-                name="rain averaged terminal velocity",
-                radius_range=settings.rain_water_radius_range,
-            ),
             PySDM_products.AmbientRelativeHumidity(name="RH", unit="%"),
             PySDM_products.AmbientPressure(name="p"),
             PySDM_products.AmbientTemperature(name="T"),
@@ -223,9 +221,6 @@ class PySDMKiDDynamics:
         if settings.enable_condensation:
             self.products.extend(
                 [
-                    PySDM_products.RipeningRate(name="ripening"),
-                    PySDM_products.ActivatingRate(name="activating"),
-                    PySDM_products.DeactivatingRate(name="deactivating"),
                     PySDM_products.PeakSaturation(),
                     PySDM_products.ParticleSizeSpectrumPerVolume(
                         name="dry spectrum",
@@ -237,15 +232,6 @@ class PySDMKiDDynamics:
         if settings.precip:
             self.products.extend(
                 [
-                    PySDM_products.CollisionRatePerGridbox(
-                        name="collision_rate",
-                    ),
-                    PySDM_products.CollisionRateDeficitPerGridbox(
-                        name="collision_deficit",
-                    ),
-                    PySDM_products.CoalescenceRatePerGridbox(
-                        name="coalescence_rate",
-                    ),
                     PySDM_products.SurfacePrecipitation(),
                 ]
             )
@@ -274,6 +260,9 @@ class PySDMKiDDynamics:
                 self.output_products[k] = np.zeros(
                     (self.mesh.grid[-1], self.number_of_bins, number_of_time_sections)
                 )
+        self.output_products["t_spectra"] = np.full(
+            len(self.save_spec_and_attr_times), np.nan
+        )
 
         ### print configuration
         key = f"dz={settings.dz}, dt={settings.dt}, options={options}"
@@ -340,6 +329,7 @@ class PySDMKiDDynamics:
             )
             if self.do_save_spectrum:
                 self.save_spectrum(save_index)  # droplet size/mass distribs
+                self.output_products["t_spectra"][save_index] = time
             if self.do_save_attrs:
                 self.save_attributes()  # superdroplet attributes
 
@@ -356,6 +346,13 @@ class PySDMKiDDynamics:
             mesh.grid[-1],
             endpoint=True,
         )
+        spectra_edges = {
+            "wet_spectrum_radius_bins_edges": self.r_bins_edges,
+            "dry_spectrum_radius_bins_edges": self.r_bins_edges_dry,
+        }
+        for name, edges in spectra_edges.items():
+            assert name not in self.output_products
+            self.output_products[name] = np.asarray(edges)
 
         self.save(0)
         print_interval = max(1, self.nt // 10)

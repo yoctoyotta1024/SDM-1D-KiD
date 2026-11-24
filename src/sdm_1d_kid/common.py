@@ -18,6 +18,7 @@ and other microphysics schemes (and through their PyMPDATA KiDDynamics)
 """
 
 
+# %% -------------------------- KiD Driver Setup ----------------------------- #
 def get_options(is_accurate=False):
     from PyMPDATA import Options
 
@@ -166,6 +167,7 @@ def exner_function_thermodynamics(
     return temp, press, rhod
 
 
+# %% ------------------- Initial Superdroplet Conditions --------------------- #
 def get_initial_spectrum_and_size_range(norm_factor, m_mode, s_geom):
     from PySDM.initialisation import spectra
 
@@ -198,3 +200,44 @@ def get_alpha_sampling(probdistrib, alpha, size_range=None):
 
 def get_spectral_sampling_method(alpha_sampling):
     return alpha_sampling.sample_quasirandom
+
+
+# %% -------------------------- Post-Processing ------------------------------ #
+def generic_check_variable(ds, logger, var, var2, source, source2, rtol):
+    """Log whether 'var2' matches the reference 'var' to within relative tolerance 'rtol'."""
+    import numpy as np
+
+    reldiff = float((np.abs(ds[var] - ds[var2]) / ds[var]).max())
+    if reldiff > rtol:
+        logger.warning(
+            f"{var} ({source}) differs from {var2} ({source2}) by up to {reldiff:.2e} "
+            f"(relative to {var})"
+        )
+        return False
+    logger.info(f"{var} ({source}) matches {var2} ({source2}) ({reldiff:.2e})")
+    return True
+
+
+def check_dry_density(ds, logger, source="MetPy", source2="KiD Driver", rtol=1e-3):
+    """Log whether the dry air density recomputed by MetPy ("rho_dry") matches
+    the density prescribed by a KiD driver ("rhod").
+
+    The two are calculated differently (the driver's formulae and constants vs. MetPy's
+    from p, T and qvap), so they need not agree exactly; a large difference indicates an
+    inconsistency between the driver's thermodynamics and the post-processing (e.g. units).
+    """
+    return generic_check_variable(ds, logger, "rho_dry", "rhod", source, source2, rtol)
+
+
+def check_relative_humidity(
+    ds, logger, source="MetPy", source2="KiD Driver", rtol=5e-3
+):
+    """Same as check_dry_density but for relative humidity"""
+    return generic_check_variable(ds, logger, "relh", "rh", source, source2, rtol)
+
+
+def check_dry_potential_temperature(
+    ds, logger, source="MetPy", source2="KiD Driver", rtol=1e-3
+):
+    """Same as check_dry_density but for dry-air potential temperature"""
+    return generic_check_variable(ds, logger, "theta_dry", "thd", source, source2, rtol)
