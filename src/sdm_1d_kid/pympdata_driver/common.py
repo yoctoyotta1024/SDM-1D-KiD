@@ -75,3 +75,37 @@ def hydrostatic_equilibrium(temperature, pressure, thd, qv0, is_approx_drhod_dz)
         return drhod_dz
 
     return drhod_dz
+
+
+def get_initial_spectrum_and_size_range(norm_factor, m_mode, s_geom):
+    from PySDM.initialisation import spectra
+
+    spectrum = spectra.Lognormal(norm_factor=norm_factor, m_mode=m_mode, s_geom=s_geom)
+
+    ### *(!)Note:* if changing default_cdf_range / size_range, be mindful that
+    ### MINRADIUS/MAXRADIUS in Cleo's config.yaml may also need to change
+    default_cdf_range = (0.00001, 0.99999)
+    size_range = spectrum.percentiles(
+        default_cdf_range
+    )  # min and max range of radii to sample [m]
+
+    return spectrum, size_range
+
+
+def get_alpha_sampling(probdistrib, alpha, size_range=None):
+    import numpy as np
+    from PySDM.initialisation.sampling.spectral_sampling import AlphaSampling
+
+    return AlphaSampling(
+        probdistrib,
+        alpha=alpha,
+        size_range=size_range,
+        interp_points=100000,
+        dist_1_inv=lambda y, size_range: np.exp(
+            (np.log(size_range[1]) - np.log(size_range[0])) * y + np.log(size_range[0])
+        ),
+    )
+
+
+def get_spectral_sampling_method(alpha_sampling):
+    return alpha_sampling.sample_quasirandom

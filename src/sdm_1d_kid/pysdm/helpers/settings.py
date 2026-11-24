@@ -22,7 +22,6 @@ import numpy as np
 from PySDM import Formulae
 from PySDM.dynamics import condensation
 from PySDM.dynamics.collisions.collision_kernels import Geometric
-from PySDM.initialisation import spectra
 from PySDM.physics import si
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
@@ -85,11 +84,13 @@ class Settings:
         self.particle_reservoir_depth = (
             (2 * apprx_w1 * t_1 / np.pi) // self.dz + 1
         ) * self.dz
-        self.wet_radius_spectrum_per_mass_of_dry_air = spectra.Lognormal(
+        a, b = cmn.get_initial_spectrum_and_size_range(
             norm_factor=particles_per_volume_STP / self.formulae.constants.rho_STP,
             m_mode=m_mode,
             s_geom=s_geom,
         )
+        self.spectrum = a  # wet_radius_spectrum_per_mass_of_dry_air
+        self.size_range = b  # [min, max] radii to sample
 
         ### Set (Initial) Thermodynamic Profile
         self.qv0 = cmn.qvap_initial_condition(

@@ -170,8 +170,8 @@ def generate_superdroplet_initial_conditions_file(
     import yaml
     from cleopy import geninitconds
     from cleopy.initsuperdropsbinary_src import attrsgen, crdgens, dryrgens
-    from PySDM.initialisation import spectra
 
+    import sdm_1d_kid.pympdata_driver.common as cmn
     from sdm_1d_kid.cleo.helpers import alpha_sampling_wrapper as asw
     from sdm_1d_kid.cleo.helpers import get_initial_pressure_profile as gipp
 
@@ -200,16 +200,13 @@ def generate_superdroplet_initial_conditions_file(
     geomean = float(sds_init["geomean"])
     geosig = float(sds_init["geosig"])
     numconc = float(sds_init["numconc"])
-    spectrum = spectra.Lognormal(norm_factor=1.0, m_mode=geomean, s_geom=geosig)
+    spectrum, size_range = cmn.get_initial_spectrum_and_size_range(1.0, geomean, geosig)
     nsupers_pergbx = int(sds_init["nsupers_pergbx"])
     alpha = float(sds_init["alpha"])
     alpha_seed = int(sds_init["alpha_seed"])
-    ### *(!)Note:* if changing rspan, be mindful of MINRADIUS/MAXRADIUS in config.yaml
-    default_cdf_range = (0.00001, 0.99999)
-    rspan = spectrum.percentiles(
-        default_cdf_range
-    )  # min and max range of radii to sample [m]
-    radiigen, xiprobdist = asw.AlphaSamplingWrapper(spectrum, alpha, alpha_seed, rspan)
+    radiigen, xiprobdist = asw.AlphaSamplingWrapper(
+        spectrum, alpha, alpha_seed, size_range
+    )
     numconc_tolerance = (
         0.001  # 0.1% tolerance on actual numconc not being equal to input numconc
     )

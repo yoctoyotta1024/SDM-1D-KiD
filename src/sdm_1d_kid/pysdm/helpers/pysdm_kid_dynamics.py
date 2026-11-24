@@ -24,8 +24,7 @@ from typing import Any
 import numpy as np
 import PySDM.products as PySDM_products
 from PyMPDATA_examples.Shipway_and_Hill_2012 import si
-from PySDM import Formulae, Particulator
-from PySDM.backends import CPU
+from PySDM import Particulator
 from PySDM.dynamics import (
     AmbientThermodynamics,
     Coalescence,
@@ -33,23 +32,23 @@ from PySDM.dynamics import (
     Displacement,
     EulerianAdvection,
 )
-from PySDM.environments.kinematic_1d import Kinematic1D
 from PySDM.impl.mesh import Mesh
-from PySDM.initialisation.sampling import spatial_sampling, spectral_sampling
+from PySDM.initialisation.sampling import spatial_sampling
 
 import sdm_1d_kid.pympdata_driver.common as cmn
+from sdm_1d_kid.pysdm.helpers.kinematic_1d import Kinematic1D
 from sdm_1d_kid.pysdm.helpers.mpdata_1d import MPDATA_1D
 from sdm_1d_kid.pysdm.helpers.settings import Settings
 
 
 class PySDMKiDDynamics:
-    def __init__(self, kid_config, sds_init, sdm_settings, outputdata, backend=CPU):
+    def __init__(self, kid_config, sds_init, sdm_settings, outputdata):
         ### read in config directly to settings
         self.do_save_spectrum = outputdata["do_save_spectrum"]
         self.do_save_attrs = outputdata["do_save_attrs"]
+        alpha = float(sds_init["alpha"])
+        alpha_seed = int(sds_init["alpha_seed"])
         xi_by_dry_air_density = sds_init["xi_by_dry_air_density"]
-        rng = np.random.default_rng(int(sds_init["alpha_seed"]))
-        formulae = Formulae(seed=int(rng.integers(0, 2**32)))
         dt_out = float(outputdata["output_timestep"])
         save_spec_and_attr_times = np.arange(
             0, float(kid_config["t_end"]) + dt_out, dt_out
@@ -75,7 +74,6 @@ class PySDMKiDDynamics:
             s_geom=float(sds_init["geosig"]),
             kappa=float(sdm_settings["kappa"]),
             precip=sdm_settings["is_precip"],
-            formulae=formulae,
             collision_kernel=None,
             save_spec_and_attr_times=save_spec_and_attr_times,
             cloud_water_radius_range=cloud_water_radius_range,
@@ -123,8 +121,8 @@ class PySDMKiDDynamics:
             mesh=self.mesh,
             thd_of_z=settings.thd,
             rhod_of_z=settings.rhod,
+            alpha_seed=alpha_seed,
             z0=settings.z_min,
-            backend=backend(formulae=settings.formulae, n_dims=1),
             solvers=mpdata,
         )
 
@@ -159,11 +157,13 @@ class PySDMKiDDynamics:
                 ),
             )
         )
+
+        alpha_sampling = cmn.get_alpha_sampling(
+            settings.spectrum, alpha, size_range=settings.size_range
+        )
         self.attributes = env.init_attributes(
             spatial_discretisation=spatial_sampling.Pseudorandom(),
-            spectral_discretisation=spectral_sampling.ConstantMultiplicity(
-                spectrum=settings.wet_radius_spectrum_per_mass_of_dry_air
-            ),
+            spectral_sampling_method=cmn.get_spectral_sampling_method(alpha_sampling),
             kappa=settings.kappa,
             collisions_only=not settings.enable_condensation,
             z_part=settings.z_part,

@@ -61,9 +61,8 @@ def main(config_filename):
         raise ValueError("Cannot run PySDM: directory for quickplots doesn't exist")
 
     ### WIP add these functionalities:
-    # need to use alpha (with alpha_seed i.e formulae)
-    # collision_kernel = None vs. collision_kernel = Hydrodynamic()
     # is_exner_novapour, is_exner_novapour_uniformrho, is_approx_drhod_dz
+    # collision_kernel = None vs. collision_kernel = Hydrodynamic()
 
     ### --- run 1-D KiD with PyMPDATA and PySDM --- ###
     perform_1dkid.main(
