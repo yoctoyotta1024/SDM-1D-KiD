@@ -107,8 +107,9 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
     )
 
     ### SDM Runtime Parameter
-    kappa = 0.9  # Aerosol hygroscopicity factor
+    kappa = 0.9  # aerosol hygroscopicity factor
     is_precip = True  # enable/disable precipitation scheme
+    collision_kernel = "berry"  # name of collision kernel (either "berry" or "long")
 
     ### timesteps
     timestep = 1.25  # time between SD collision [s]
@@ -162,6 +163,7 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
             "timestep": timestep,
             "t_end": t_end,
             "is_precip": is_precip,
+            "collision_kernel": collision_kernel,
             "kappa": kappa,
             "outputdir": str(outputdir),
             "output_timestep": output_timestep,

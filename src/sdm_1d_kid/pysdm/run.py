@@ -62,7 +62,6 @@ def main(config_filename):
 
     ### WIP add these functionalities:
     # is_exner_novapour, is_exner_novapour_uniformrho, is_approx_drhod_dz
-    # collision_kernel = None vs. collision_kernel = Hydrodynamic()
 
     ### --- run 1-D KiD with PyMPDATA and PySDM --- ###
     perform_1dkid.main(

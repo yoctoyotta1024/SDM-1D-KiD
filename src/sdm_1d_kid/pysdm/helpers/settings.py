@@ -21,7 +21,7 @@ between v3.1.0 and v3.1.1
 import numpy as np
 from PySDM import Formulae
 from PySDM.dynamics import condensation
-from PySDM.dynamics.collisions.collision_kernels import Geometric
+from PySDM.dynamics.collisions.collision_kernels import Hydrodynamic, Long1974
 from PySDM.physics import si
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
@@ -49,7 +49,7 @@ class Settings:
         enable_condensation: bool = True,
         precip: bool = True,
         formulae: Formulae = None,
-        collision_kernel=None,
+        collision_kernel: str = "berry",
         save_spec_and_attr_times=(),
         cloud_water_radius_range=(1 * si.um, 50 * si.um),
         rain_water_radius_range=(50 * si.um, np.inf * si.um),
@@ -69,7 +69,6 @@ class Settings:
         self.precip = precip
         self.enable_condensation = enable_condensation
         self.z_part = z_part
-        self.collision_kernel = collision_kernel or Geometric(collection_efficiency=1)
         self.cloud_water_radius_range = cloud_water_radius_range
         self.rain_water_radius_range = rain_water_radius_range
         self.save_spec_and_attr_times = save_spec_and_attr_times
@@ -145,6 +144,14 @@ class Settings:
         self.condensation_rtol_thd = condensation.DEFAULTS.rtol_thd
         self.condensation_adaptive = True
         self.condensation_update_thd = False
+
+        valid_collision_kernels = {"berry": Hydrodynamic, "long": Long1974}
+        if collision_kernel not in valid_collision_kernels:
+            raise ValueError(
+                f"collision_kernel '{collision_kernel}' not recognised, possible "
+                f"choices: ({', '.join(valid_collision_kernels)})"
+            )
+        self.collision_kernel = valid_collision_kernels[collision_kernel]()
         self.coalescence_adaptive = True
 
         ### PySDM Output Settings

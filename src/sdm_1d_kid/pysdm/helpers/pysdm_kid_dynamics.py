@@ -74,7 +74,7 @@ class PySDMKiDDynamics:
             s_geom=float(sds_init["geosig"]),
             kappa=float(sdm_settings["kappa"]),
             precip=sdm_settings["is_precip"],
-            collision_kernel=None,
+            collision_kernel=sdm_settings["collision_kernel"],
             save_spec_and_attr_times=save_spec_and_attr_times,
             cloud_water_radius_range=cloud_water_radius_range,
             rain_water_radius_range=rain_water_radius_range,
