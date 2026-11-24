@@ -4,7 +4,7 @@ Copyright (c) 2026 MPI-M, Clara Bayley
 
 ----- SDM-1D-KiD -----
 File: common.py
-Project: pympdata_driver
+Project: sdm_1d_kid
 Created Date: Monday 23rd November 2026
 Author: Clara Bayley (CB)
 Additional Contributors:
@@ -13,8 +13,8 @@ License: BSD 3-Clause "New" or "Revised" License
 https://opensource.org/licenses/BSD-3-Clause
 -----
 File Description:
-common functions between PySDM KiDDynamics and PyMPDATA KiDDynamics
-both should be the same to run the same KiD
+common functions between KiD setup of PySDM (and its PyMPDATA through PySDMKiDDynamics)
+and other microphysics schemes (and through their PyMPDATA KiDDynamics)
 """
 
 

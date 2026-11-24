@@ -25,7 +25,7 @@ from pystrict import strict
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
-import sdm_1d_kid.pympdata_driver.common as cmn
+import sdm_1d_kid.common as cmn
 from sdm_1d_kid.pympdata_driver.arakawa_c import arakawa_c
 
 

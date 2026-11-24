@@ -171,7 +171,7 @@ def generate_superdroplet_initial_conditions_file(
     from cleopy import geninitconds
     from cleopy.initsuperdropsbinary_src import attrsgen, crdgens, dryrgens
 
-    import sdm_1d_kid.pympdata_driver.common as cmn
+    import sdm_1d_kid.common as cmn
     from sdm_1d_kid.cleo.helpers import alpha_sampling_wrapper as asw
     from sdm_1d_kid.cleo.helpers import get_initial_pressure_profile as gipp
 

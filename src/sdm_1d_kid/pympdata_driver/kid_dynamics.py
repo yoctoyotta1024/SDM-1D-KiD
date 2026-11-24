@@ -19,7 +19,7 @@ class for driving KiD rainshaft test case
 import numpy as np
 from PyMPDATA_examples.Shipway_and_Hill_2012 import si
 
-import sdm_1d_kid.pympdata_driver.common as cmn
+import sdm_1d_kid.common as cmn
 from sdm_1d_kid.pympdata_driver.mpdata import MPDATA
 from sdm_1d_kid.pympdata_driver.settings import Settings
 

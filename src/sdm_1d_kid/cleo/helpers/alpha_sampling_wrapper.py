@@ -21,7 +21,7 @@ import numpy as np
 from PySDM import Formulae
 from PySDM.backends import CPU
 
-import sdm_1d_kid.pympdata_driver.common as cmn
+import sdm_1d_kid.common as cmn
 
 
 def AlphaSamplingWrapper(probdistrib, alpha, alpha_seed, size_range):

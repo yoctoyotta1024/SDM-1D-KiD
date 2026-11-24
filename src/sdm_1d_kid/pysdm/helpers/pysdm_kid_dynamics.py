@@ -35,7 +35,7 @@ from PySDM.dynamics import (
 from PySDM.impl.mesh import Mesh
 from PySDM.initialisation.sampling import spatial_sampling
 
-import sdm_1d_kid.pympdata_driver.common as cmn
+import sdm_1d_kid.common as cmn
 from sdm_1d_kid.pysdm.helpers.kinematic_1d import Kinematic1D
 from sdm_1d_kid.pysdm.helpers.mpdata_1d import MPDATA_1D
 from sdm_1d_kid.pysdm.helpers.settings import Settings

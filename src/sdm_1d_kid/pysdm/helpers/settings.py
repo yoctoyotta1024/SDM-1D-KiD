@@ -26,7 +26,7 @@ from PySDM.physics import si
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
 
-import sdm_1d_kid.pympdata_driver.common as cmn
+import sdm_1d_kid.common as cmn
 
 
 class Settings:
