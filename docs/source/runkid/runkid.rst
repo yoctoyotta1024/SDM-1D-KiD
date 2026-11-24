@@ -12,3 +12,4 @@ Next Up
    cleo
    pysdm
    bulk_scheme
+   cleo_pysdm_comparison

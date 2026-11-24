@@ -200,3 +200,9 @@ Sanity check: integrating back the normalised distributions should recover the t
 Plotting the "Quicklooks"
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ###WIP
+
+
+Comparison to the PySDM 1-D KiD
+--------------------------------
+You may want to have a look at the similarities and differences between the PySDM
+and Cleo KiD setups here: :doc:`cleo_pysdm_comparison`.
