@@ -40,9 +40,9 @@ kid_config:
   wmax_const: XXX                             # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
   tscale_const: XXX                           # timescale of sinusoid [s]
   psurf_hpa: XXX                              # surface pressure [hPa]
-  is_exner_novapour: False                    # use Exner profile without accounting for vapour (Shipway and Hill 2012)
-  is_exner_novapour_uniformrho: False         # use Exner also with constant air density (Hill et al. 2023)
-  is_approx_drhod_dz: False                   # ignore water vapour component in hydrostatic equilibrium profile
+  is_exner_novapour: XXX                      # use Exner profile without accounting for vapour (Shipway and Hill 2012)
+  is_exner_novapour_uniformrho: XXX           # use Exner also with constant air density (Hill et al. 2023)
+  is_approx_drhod_dz: XXX                     # ignore water vapour component in hydrostatic equilibrium profile
   timestep: XXX                               # == COUPLTSTEP, time between dynamic couplings [s]
   t_end: XXX                                  # == T_END, time span of integration from 0s to T_END [s]
 

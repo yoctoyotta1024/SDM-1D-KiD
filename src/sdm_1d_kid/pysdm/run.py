@@ -60,9 +60,6 @@ def main(config_filename):
     if not quickplotdir.is_dir():
         raise ValueError("Cannot run PySDM: directory for quickplots doesn't exist")
 
-    ### WIP add these functionalities:
-    # is_exner_novapour, is_exner_novapour_uniformrho, is_approx_drhod_dz
-
     ### --- run 1-D KiD with PyMPDATA and PySDM --- ###
     perform_1dkid.main(
         kid_config,

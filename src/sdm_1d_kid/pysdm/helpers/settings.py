@@ -39,7 +39,9 @@ class Settings:
         t_max: float = 15 * si.minutes,
         z_max: float = 3000 * si.m,
         p_surf: float = 1000 * si.hPa,
-        is_approx_drhod_dz: bool = False,
+        is_exner_novapour: bool | None = False,
+        is_exner_novapour_uniformrho: bool | None = False,
+        is_approx_drhod_dz: bool | None = False,
         n_sd_per_gridbox: int = 128,
         particles_per_volume_STP: int = 50 / si.cm**3,
         m_mode=0.08 / 2 * si.um,
@@ -105,8 +107,6 @@ class Settings:
                     self._th(z), self.qv0(z)
                 )
 
-        self.thd = thd
-
         ### z position and function to deal with reservoir below surface
         self.z_min = -self.particle_reservoir_depth
         z_points = np.linspace(self.z_min, self.z_max, 2 * self.nz + 1)
@@ -115,29 +115,44 @@ class Settings:
         ### height above reservoir, i.e. relative to surface [m]
         self.zposition = lambda zZ: zZ * (self.nz * self.dz) + self.z_min
 
-        drhod_dz = cmn.hydrostatic_equilibrium(
-            self.formulae.state_variable_triplet.T,
-            self.formulae.state_variable_triplet.p,
-            self.thd,
-            self.qv0,
-            is_approx_drhod_dz,
-        )
+        if is_exner_novapour or is_exner_novapour_uniformrho:
+            if is_exner_novapour_uniformrho:
+                raise NotImplementedError(
+                    "PySDM derives T directly from rhod, so uniform rhod=1 gives wrong temperatures"
+                )
+            self.thd = lambda z, qv=None: self._th(
+                z
+            )  # treat as if no vapour: theta = theta_dry
+            _, _, rhod = cmn.exner_function_thermodynamics(
+                p_surf, self._th, is_exner_novapour_uniformrho, z_points=z_points
+            )
+            self.rhod = rhod
+        else:
+            self.thd = thd
 
-        self.rhod0 = self.formulae.state_variable_triplet.rho_d(
-            p=p_surf,
-            water_vapour_mixing_ratio=self.qv0(0 * si.m),
-            theta_std=self._th(0 * si.m),
-        )
-        rhod_solution = solve_ivp(
-            fun=drhod_dz,
-            t_span=(self.z_min, self.z_max),
-            y0=np.asarray((self.rhod0,)),
-            t_eval=z_points,
-            max_step=dz / 2,
-        )
-        assert rhod_solution.success
+            drhod_dz = cmn.hydrostatic_equilibrium(
+                self.formulae.state_variable_triplet.T,
+                self.formulae.state_variable_triplet.p,
+                self.thd,
+                self.qv0,
+                is_approx_drhod_dz,
+            )
 
-        self.rhod = interp1d(z_points, rhod_solution.y[0])
+            self.rhod0 = self.formulae.state_variable_triplet.rho_d(
+                p=p_surf,
+                water_vapour_mixing_ratio=self.qv0(0 * si.m),
+                theta_std=self._th(0 * si.m),
+            )
+            rhod_solution = solve_ivp(
+                fun=drhod_dz,
+                t_span=(self.z_min, self.z_max),
+                y0=np.asarray((self.rhod0,)),
+                t_eval=z_points,
+                max_step=dz / 2,
+            )
+            assert rhod_solution.success
+
+            self.rhod = interp1d(z_points, rhod_solution.y[0])
 
         ### PySDM SDM Settings
         self.condensation_rtol_x = condensation.DEFAULTS.rtol_x

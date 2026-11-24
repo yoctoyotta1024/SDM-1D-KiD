@@ -58,6 +58,13 @@ def theta_initial_condition():
 
 
 def hydrostatic_equilibrium(temperature, pressure, thd, qv0, is_approx_drhod_dz):
+    """
+    returns function to integrate (with solve_ivp) to get hydrostatic equilibrium
+    for initial thermodynamic profiles
+
+    if ``is_approx_drhod_dz==True``, then effect of water vapour on density/pressure
+    profile is neglected.
+    """
     from numdifftools import Derivative
     from PyMPDATA_examples.Shipway_and_Hill_2012 import formulae
     from PyMPDATA_examples.Shipway_and_Hill_2012.formulae import const
@@ -75,6 +82,82 @@ def hydrostatic_equilibrium(temperature, pressure, thd, qv0, is_approx_drhod_dz)
         return drhod_dz
 
     return drhod_dz
+
+
+def exner_function_thermodynamics(
+    p_surf, _th, is_exner_novapour_uniformrho, z_points=None
+):
+    """
+    Returns function for initial thermodynamics profiles as in
+    Shipway and Hill (2012) and Hill et al. (2023).
+
+    If ``is_exner_novapour_uniformrho==False``, profiles calculated as in
+    original KiD setup of Shipway and Hill (2012).
+
+    If ``is_exner_novapour_uniformrho==True``, over-writes density profile
+    to be a constant = 1.0 throughout the column, meanwhile the other
+    thermodynamics is still calculated using Exner function. This is what was
+    done by Hill et al. (2023).
+
+    *Note:* these formulae/choices are not documented well in their papers, see:
+    https://github.com/BShipway/KiD/blob/bad81aa6efa4b7e4743b6a1867382fc74c10a884/src/test_cases.f90#L784
+    """
+    import numpy as np
+    from PyMPDATA_examples.Shipway_and_Hill_2012.formulae import const
+    from scipy.interpolate import interp1d
+
+    def z2exner(z, return_rho=False, return_press=False, return_temp=False):
+        # z2exner function requires z >= 0.0
+        # therefore where z < 0.0, treat as if z == 0.0
+        z = np.where(z < 0.0, 0.0, z)
+
+        nz = len(z)
+        p_ref = 100000.0
+        r_on_cp = const.Rd / const.c_pd
+        theta = _th(z)
+
+        dexner = np.zeros(nz)
+        dexner[0] = const.g * z[0] / (const.c_pd * theta[0])
+        for k in range(1, nz):
+            dexner[k] = (
+                const.g
+                * (z[k] - z[k - 1])
+                / (const.c_pd * 0.5 * (theta[k] + theta[k - 1]))
+            )
+
+        exner = np.zeros(nz)
+        exner[-1] = (p_surf / p_ref) ** r_on_cp - np.sum(dexner)
+        for k in range(nz - 2, -1, -1):
+            exner[k] = exner[k + 1] + dexner[k]
+
+        if return_rho:
+            rho = (p_ref * exner ** (1.0 / r_on_cp - 1.0)) / (const.Rd * theta)
+            return rho
+        if return_press:
+            return p_ref * exner ** (1.0 / r_on_cp)
+        if return_temp:
+            return theta * exner
+        else:
+            return exner
+
+    def temp(z):
+        return z2exner(z, return_temp=True)
+
+    def press(z, qv):
+        return z2exner(z, return_press=True)
+
+    if is_exner_novapour_uniformrho:
+        rhod0 = 1.0 * np.ones_like(z_points)  # [kg / m^3]
+
+        def rhod(z):
+            z = np.where(z < 0.0, 0.0, z)
+            return interp1d(z_points, rhod0)(z)
+    else:
+
+        def rhod(z):
+            return z2exner(z, return_rho=True)
+
+    return temp, press, rhod
 
 
 def get_initial_spectrum_and_size_range(norm_factor, m_mode, s_geom):

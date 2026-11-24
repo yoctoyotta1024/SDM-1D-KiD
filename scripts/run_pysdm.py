@@ -120,6 +120,17 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
     tscale_const = 600  # timescale of sinusoid [s]
     psurf_hpa = 1000  # surface pressure [hPa]
 
+    ### KiD Dynamics Initial Atmospheric Profile (default is hydrostatic equilibrium)
+    is_exner_novapour = (
+        False  # use Exner profile without accounting for vapour (Shipway and Hill 2012)
+    )
+    is_exner_novapour_uniformrho = (
+        False  # use Exner also with constant air density (Hill et al. 2023)
+    )
+    is_approx_drhod_dz = (
+        False  # ignore water vapour component in hydrostatic equilibrium profile
+    )
+
     ### Output Parameters ###
     output_timestep = 1.25  # time between SDM observations [s]
     cloud_water_radius_range = (
@@ -160,6 +171,9 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
             "wmax_const": wmax_const,
             "tscale_const": tscale_const,
             "psurf_hpa": psurf_hpa,
+            "is_exner_novapour": is_exner_novapour,
+            "is_exner_novapour_uniformrho": is_exner_novapour_uniformrho,
+            "is_approx_drhod_dz": is_approx_drhod_dz,
             "timestep": timestep,
             "t_end": t_end,
             "is_precip": is_precip,

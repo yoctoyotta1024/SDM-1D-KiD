@@ -20,7 +20,7 @@ between v1.6.1 and v1.6.2
 
 import numpy as np
 from PyMPDATA_examples.Shipway_and_Hill_2012 import formulae
-from PyMPDATA_examples.Shipway_and_Hill_2012.formulae import const, si
+from PyMPDATA_examples.Shipway_and_Hill_2012.formulae import si
 from pystrict import strict
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp1d
@@ -69,51 +69,16 @@ class Settings:
 
         ### function to deal with z < 0 like it is z == 0
         ### so returns z height either above or at surface [m]
-        zpositive = lambda z: np.where(z < 0, 0, z)
+        zpositive = lambda z: np.where(z < 0.0, 0.0, z)
 
         if is_exner_novapour or is_exner_novapour_uniformrho:
-            # note: not in the paper,
-            # https://github.com/BShipway/KiD/blob/bad81aa6efa4b7e4743b6a1867382fc74c10a884/src/test_cases.f90#L784
-            def z2exner(z, return_rho=False, return_press=False, return_temp=False):
-                nz = len(z)
-                p_ref = 100000.0
-                r_on_cp = const.Rd / const.c_pd
-                theta = self._th(z)
-
-                dexner = np.zeros(nz)
-                dexner[0] = const.g * z[0] / (const.c_pd * theta[0])
-                for k in range(1, nz):
-                    dexner[k] = (
-                        const.g
-                        * (z[k] - z[k - 1])
-                        / (const.c_pd * 0.5 * (theta[k] + theta[k - 1]))
-                    )
-
-                exner = np.zeros(nz)
-                exner[-1] = (p_surf / p_ref) ** r_on_cp - np.sum(dexner)
-                for k in range(nz - 2, -1, -1):
-                    exner[k] = exner[k + 1] + dexner[k]
-
-                if return_rho:
-                    rho = (p_ref * exner ** (1.0 / r_on_cp - 1.0)) / (const.Rd * theta)
-                    return rho
-                if return_press:
-                    return p_ref * exner ** (1.0 / r_on_cp)
-                if return_temp:
-                    return theta * exner
-                else:
-                    return exner
-
-            self.temp = lambda z: z2exner(zpositive(z), return_temp=True)
-            self.press = lambda z, qv: z2exner(zpositive(z), return_press=True)
-            self.rhod = lambda z: z2exner(zpositive(z), return_rho=True)
-            if is_exner_novapour_uniformrho:
-                rhod0 = 1.0 * np.ones_like(z_points)  # [kg / m^3]
-                self.rhod = lambda z: interp1d(z_points, rhod0)(zpositive(z))
-
+            temp, press, rhod = cmn.exner_function_thermodynamics(
+                p_surf, self._th, is_exner_novapour_uniformrho, z_points=z_points
+            )
+            self.temp = temp
+            self.press = press
+            self.rhod = rhod
         else:
-            # note: not in the paper,
-            # https://github.com/BShipway/KiD/tree/master/src/physconst.f90#L43
             drhod_dz = cmn.hydrostatic_equilibrium(
                 formulae.temperature,
                 formulae.pressure,

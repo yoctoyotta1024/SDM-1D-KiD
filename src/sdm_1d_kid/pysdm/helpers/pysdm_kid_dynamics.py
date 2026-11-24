@@ -67,6 +67,8 @@ class PySDMKiDDynamics:
             t_max=float(kid_config["t_end"]) * si.s,
             z_max=float(kid_config["zmax"]) * si.m,
             p_surf=float(kid_config["psurf_hpa"]) * si.hPa,
+            is_exner_novapour=kid_config["is_exner_novapour"],
+            is_exner_novapour_uniformrho=kid_config["is_exner_novapour_uniformrho"],
             is_approx_drhod_dz=kid_config["is_approx_drhod_dz"],
             n_sd_per_gridbox=int(sds_init["nsupers_pergbx"]),
             particles_per_volume_STP=float(sds_init["numconc"]) / si.m**3,
