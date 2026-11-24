@@ -86,8 +86,8 @@ if [[ "${model}" == "bulk" ]]; then
 fi
 
 if [[ "${model}" == "pysdm" ]]; then
-  echo "Bulk ensemble name=${pysdm_ensemble_name}"
-  echo "Bulk ensemble size=${pysdm_ensemble_size}"
+  echo "PySDM ensemble name=${pysdm_ensemble_name}"
+  echo "PySDM ensemble size=${pysdm_ensemble_size}"
 fi
 echo "### ------------------------------------------- ###"
 ### ---------------------------------------------------- ###
