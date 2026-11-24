@@ -116,8 +116,8 @@ def generate_gridfile(
     ### --- load configuration --- ###
     with open(config_filename) as config_file:
         cnfg = yaml.safe_load(config_file)
-    constants_filename = cnfg["inputfiles"]["constants_filename"]
-    grid_filename = cnfg["inputfiles"]["grid_filename"]
+    constants_filename = str(Path(cnfg["inputfiles"]["constants_filename"]).resolve())
+    grid_filename = str(Path(cnfg["inputfiles"]["grid_filename"]).resolve())
     grid_geom = cnfg["generate_inputfiles"]["grid_geometry"]
 
     if not Path(constants_filename).exists():
@@ -178,9 +178,9 @@ def generate_superdroplet_initial_conditions_file(
     ### --- load configuration --- ###
     with open(config_filename) as config_file:
         cnfg = yaml.safe_load(config_file)
-    constants_filename = cnfg["inputfiles"]["constants_filename"]
-    grid_filename = cnfg["inputfiles"]["grid_filename"]
-    initsupers_filename = cnfg["initsupers"]["initsupers_filename"]
+    constants_filename = str(Path(cnfg["inputfiles"]["constants_filename"]).resolve())
+    grid_filename = str(Path(cnfg["inputfiles"]["grid_filename"]).resolve())
+    initsupers_filename = str(Path(cnfg["initsupers"]["initsupers_filename"]).resolve())
     sds_init = cnfg["generate_inputfiles"]["superdroplet_initialisation"]
 
     if not Path(constants_filename).exists():
@@ -239,8 +239,8 @@ def generate_superdroplet_initial_conditions_file(
     if show_figures or save_figures:
         gbxs2plt = [
             0,
-            cnfg["domain"]["ngbxs"] // 2,
-            cnfg["domain"]["ngbxs"] - 1,
+            int(cnfg["domain"]["ngbxs"]) // 2,
+            int(cnfg["domain"]["ngbxs"]) - 1,
         ]  # indexes of gridboxes of SDs to plot (nb. "all" can be very slow)
 
     ### --- binary file generation --- ###

@@ -818,6 +818,8 @@ def main(
     run_datasets,
     postprocpath=None,
 ):
+    from pathlib import Path
+
     import numpy as np
     import yaml
     from cleopy.sdmout_src import pygbxsdat, pysetuptxt
@@ -835,7 +837,7 @@ def main(
 
     with open(config_filename) as config_file:
         cnfg = yaml.safe_load(config_file)
-    grid_filename = cnfg["inputfiles"]["grid_filename"]
+    grid_filename = Path(cnfg["inputfiles"]["grid_filename"]).resolve()
     ensemble_name = cnfg["run_ensemble"]["ensemble_name"]
 
     config = pysetuptxt.get_config(setup_filename, nattrs=3, isprint=False)

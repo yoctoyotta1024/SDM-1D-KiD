@@ -76,7 +76,7 @@ def main(config_filename):
     advect_hydrometeors = False  # True == PyMPDATA advection (not same as Cleo(!))
     kid_config = cnfg["kid_config"]
     timestep = float(kid_config["timestep"])
-    assert kid_config["timestep"] == float(cnfg["timesteps"]["COUPLTSTEP"]), (
+    assert float(kid_config["timestep"]) == float(cnfg["timesteps"]["COUPLTSTEP"]), (
         "timesteps don't agree"
     )
     assert float(kid_config["t_end"]) == float(cnfg["timesteps"]["T_END"]), (
@@ -96,7 +96,7 @@ def main(config_filename):
     zdelta = float(kid_config["zdelta"])
     assert (zmax - zmin) % zdelta == 0, "z limit is not a multiple of the grid spacing."
     ngbxs = int(np.ceil((zmax - zmin) / zdelta))
-    assert ngbxs == cnfg["domain"]["ngbxs"], "ngbxs don't agree"
+    assert ngbxs == int(cnfg["domain"]["ngbxs"]), "ngbxs don't agree"
 
     ### --- set initial classes (will be updated by PyMPDATA and Cleo) --- ###
     thermo_init = Thermodynamics(

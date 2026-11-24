@@ -50,8 +50,10 @@ class PySDMKiDDynamics:
         xi_by_dry_air_density = sds_init["xi_by_dry_air_density"]
         rng = np.random.default_rng(int(sds_init["alpha_seed"]))
         formulae = Formulae(seed=int(rng.integers(0, 2**32)))
-        dt_out = outputdata["output_timestep"]
-        save_spec_and_attr_times = np.arange(0, kid_config["t_end"] + dt_out, dt_out)
+        dt_out = float(outputdata["output_timestep"])
+        save_spec_and_attr_times = np.arange(
+            0, float(kid_config["t_end"]) + dt_out, dt_out
+        )
         cloud_water_radius_range = tuple(
             float(r) * si.m for r in outputdata["cloud_water_radius_range"]
         )
@@ -59,19 +61,19 @@ class PySDMKiDDynamics:
             float(r) * si.m for r in outputdata["rain_water_radius_range"]
         )
         settings = Settings(
-            dt=kid_config["timestep"] * si.s,
-            dz=kid_config["zdelta"] * si.m,
-            wmax_const=kid_config["wmax_const"] * si.m / si.s * si.kg / si.m**3,
-            tscale_const=kid_config["tscale_const"] * si.s,
-            t_max=kid_config["t_end"] * si.s,
-            z_max=kid_config["zmax"] * si.m,
-            p_surf=kid_config["psurf_hpa"] * si.hPa,
+            dt=float(kid_config["timestep"]) * si.s,
+            dz=float(kid_config["zdelta"]) * si.m,
+            wmax_const=float(kid_config["wmax_const"]) * si.m / si.s * si.kg / si.m**3,
+            tscale_const=float(kid_config["tscale_const"]) * si.s,
+            t_max=float(kid_config["t_end"]) * si.s,
+            z_max=float(kid_config["zmax"]) * si.m,
+            p_surf=float(kid_config["psurf_hpa"]) * si.hPa,
             is_approx_drhod_dz=kid_config["is_approx_drhod_dz"],
-            n_sd_per_gridbox=sds_init["nsupers_pergbx"],
-            particles_per_volume_STP=sds_init["numconc"] / si.m**3,
+            n_sd_per_gridbox=int(sds_init["nsupers_pergbx"]),
+            particles_per_volume_STP=float(sds_init["numconc"]) / si.m**3,
             m_mode=float(sds_init["geomean"]) * si.m,
             s_geom=float(sds_init["geosig"]),
-            kappa=sdm_settings["kappa"],
+            kappa=float(sdm_settings["kappa"]),
             precip=sdm_settings["is_precip"],
             formulae=formulae,
             collision_kernel=None,
