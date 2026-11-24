@@ -304,7 +304,10 @@ class PySDMKiDDynamics:
         )
 
         self.save(0)
+        print_interval = max(1, self.nt // 10)
         for step in range(self.nt):
+            if (step + 1) % print_interval == 0:
+                print(f"PySDM on step {step}: {step / self.nt * 100}% complete")
             mpdata = self.particulator.environment.solvers
             mpdata.update_advector_field()
             if "Displacement" in self.particulator.dynamics:
