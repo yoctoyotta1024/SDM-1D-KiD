@@ -1,4 +1,4 @@
-# ----- CLEO -----
+# ----- Cleo -----
 # File: draft_config.yaml
 # Project: config
 # Created Date: Wednesday 18th November 2026
@@ -11,7 +11,7 @@
 # Copyright (c) 2023 MPI-M, Clara Bayley
 # -----
 # File Description:
-# Draft configuration file for CLEO SDM coupled to a pythonic dynamics driver.
+# Draft configuration file for Cleo SDM coupled to a pythonic dynamics driver.
 # Note: A real configuration file, the initial superdroplets data ("initsupers_filename"), and
 # the grid data ("grid_filename"), can be made with the ./src/sdm_1d_kid/cleo/inputfiles.py
 # script using cleopy modules.
@@ -96,8 +96,8 @@ boundary_conditions:
   UPPER_COORD3LIM: XXX                          # SDs added to domain with coord3 >= UPPER_COORD3LIM [m]
   newnsupers: XXX                               # number SDs to add to each gridbox below/above LOWER/UPPER_COORD3LIM
   DRYRADIUS: 1.0                                # max dry radius of new super-droplets (for solute mass) [m]
-  MINRADIUS: 1.0e-8                             # minimum radius of new super-droplets [m]
-  MAXRADIUS: 1.5e-7                             # maximum radius of new super-droplets [m]
+  MINRADIUS: 9.5244e-9                          # minimum radius of new super-droplets [m]
+  MAXRADIUS: 1.6799e-7                          # maximum radius of new super-droplets [m]
   NUMCONC_a: XXX                                # number conc. of 1st droplet lognormal dist [m^-3]
   GEOMEAN_a: XXX                                # geometric mean radius of 1st lognormal dist [m]
   geosigma_a: XXX                               # geometric standard deviation of 1st lognormal dist
@@ -105,7 +105,7 @@ boundary_conditions:
   GEOMEAN_b: 4.0e-8                             # geometric mean radius of 2nd lognormal dist [m]
   geosigma_b: 1.4                               # geometric standard deviation of 2nd lognormal dist
 
-### CLEO Python Bindings Parameters ###
+### Cleo Python Bindings Parameters ###
 python_bindings:
   enable_terminal_velocity : XXX                  # true enables terminal velocity in superdroplet motion
   enable_condensation : XXX                       # true enables condensation in microphysics

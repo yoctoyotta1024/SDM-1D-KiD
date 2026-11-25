@@ -31,11 +31,11 @@ import cleo_python_bindings as cleo
 
 
 class CleoSDMWrapper:
-    """A class wrapping around C++ bindings to CLEO's Superdroplet Model (SDM)
+    """A class wrapping around C++ bindings to Cleo's Superdroplet Model (SDM)
     microphysics scheme (wrapper for compatibility purposes).
 
-    This class wraps around the CLEO SDM microphysics to provide compatibility
-    with the python run scripts and tests in this project. It initializes CLEO
+    This class wraps around the Cleo SDM microphysics to provide compatibility
+    with the python run scripts and tests in this project. It initializes Cleo
     SDM microphysics object and provides wrappers around methods to initialize,
     finalize, and run the microphysics.
     """

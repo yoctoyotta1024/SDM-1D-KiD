@@ -67,9 +67,9 @@ def main(
     assert run_name, "The run_name cannot be empty."
     qpm.quickplot_moisture(
         out,
-        kid_config["zmin"],
-        kid_config["zmax"],
-        kid_config["zdelta"],
+        float(kid_config["zmin"]),
+        float(kid_config["zmax"]),
+        float(kid_config["zdelta"]),
         figpath,
         run_name,
     )
@@ -108,8 +108,8 @@ def run_pympdata_as_1dkid(
     )
 
     ### type of dynamics rainshaft will undergo
-    t_end = kid_config["t_end"]
-    timestep = kid_config["timestep"]
+    t_end = float(kid_config["t_end"])
+    timestep = float(kid_config["timestep"])
     kid_dynamics = KiDDynamics(
         kid_config,
         advect_hydrometeors=advect_hydrometeors,

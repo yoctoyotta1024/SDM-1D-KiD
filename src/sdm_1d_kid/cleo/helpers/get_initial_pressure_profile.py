@@ -27,10 +27,10 @@ def get_initial_pressure_profile(grid_filename, kid_config):
     from sdm_1d_kid.pympdata_driver.settings import Settings
 
     ### add SI units to config variables
-    p_surf = kid_config["psurf_hpa"] * si.hPa
-    z_min = kid_config["zmin"] * si.m
-    z_max = kid_config["zmax"] * si.m
-    dz = kid_config["zdelta"] * si.m
+    p_surf = float(kid_config["psurf_hpa"]) * si.hPa
+    z_min = float(kid_config["zmin"]) * si.m
+    z_max = float(kid_config["zmax"]) * si.m
+    dz = float(kid_config["zdelta"]) * si.m
     is_exner_novapour = kid_config["is_exner_novapour"]
     is_exner_novapour_uniformrho = kid_config["is_exner_novapour_uniformrho"]
     is_approx_drhod_dz = kid_config["is_approx_drhod_dz"]

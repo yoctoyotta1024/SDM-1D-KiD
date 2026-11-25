@@ -13,7 +13,7 @@ License: BSD 3-Clause "New" or "Revised" License
 https://opensource.org/licenses/BSD-3-Clause
 -----
 File Description:
-class and functions for handing setup and running of CLEO via python bindings,
+class and functions for handing setup and running of Cleo via python bindings,
 functions adapted from CLEO v0.64.0 python_bindings example.
 NOTE: To use the wrapper, you must first export "CLEO_PYTHON_BINDINGS".
 E.g. if python bindings are built in $HOME/SDM-1D-KiD/build/, do:
@@ -116,7 +116,7 @@ class CleoSDM:
         Undefined behaviour if values are changed by reassigning arrays rather than by copying
         data into the arrays given during class initialisation.
         """
-        self.name = "CLEO SDM microphysics"
+        self.name = "Cleo SDM microphysics"
 
         tsteps = cleo.pycreate_timesteps(config)
         assert cleo.realtime2step(timestep) == tsteps.get_couplstep(), (

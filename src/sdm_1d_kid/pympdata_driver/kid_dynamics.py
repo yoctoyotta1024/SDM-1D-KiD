@@ -17,9 +17,9 @@ class for driving KiD rainshaft test case
 """
 
 import numpy as np
-from PyMPDATA import Options
 from PyMPDATA_examples.Shipway_and_Hill_2012 import si
 
+import sdm_1d_kid.common as cmn
 from sdm_1d_kid.pympdata_driver.mpdata import MPDATA
 from sdm_1d_kid.pympdata_driver.settings import Settings
 
@@ -43,10 +43,10 @@ class KiDDynamics:
         ### read in config
         # ``wmax_const`` is similar to 'w1' of equation (6) in Shipway and Hill (2012), but accounting for density
         # ``tscale_const`` is  't1' of equation (6) in Shipway and Hill (2012)
-        wmax_const = kid_config[
-            "wmax_const"
-        ]  # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
-        tscale_const = kid_config["tscale_const"]  # timescale of sinusoid [s]
+        wmax_const = float(
+            kid_config["wmax_const"]
+        )  # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
+        tscale_const = float(kid_config["tscale_const"])  # timescale of sinusoid [s]
         is_exner_novapour = kid_config["is_exner_novapour"]
         is_exner_novapour_uniformrho = kid_config["is_exner_novapour_uniformrho"]
         is_approx_drhod_dz = kid_config["is_approx_drhod_dz"]
@@ -54,12 +54,12 @@ class KiDDynamics:
         ### add SI units to config variables
         wmax_const = wmax_const * si.m / si.s * si.kg / si.m**3
         tscale_const = tscale_const * si.s
-        p_surf = kid_config["psurf_hpa"] * si.hPa
-        t_max = kid_config["t_end"] * si.s
-        dt = kid_config["timestep"] * si.s
-        z_min = kid_config["zmin"] * si.m
-        z_max = kid_config["zmax"] * si.m
-        dz = kid_config["zdelta"] * si.m
+        p_surf = float(kid_config["psurf_hpa"]) * si.hPa
+        t_max = float(kid_config["t_end"]) * si.s
+        dt = float(kid_config["timestep"]) * si.s
+        z_min = float(kid_config["zmin"]) * si.m
+        z_max = float(kid_config["zmax"]) * si.m
+        dz = float(kid_config["zdelta"]) * si.m
 
         # *NOTE:*(!)must match above SI units^
         self.written_kid_config_units = {
@@ -73,8 +73,7 @@ class KiDDynamics:
             "psurf_hpa": "hPa",
         }
 
-        ### initialise options and settings
-        options = Options(n_iters=3, nonoscillatory=True)
+        ### initialise options, settings and MPDATA
         self.settings = Settings(
             dt=dt,
             dz=dz,
@@ -89,6 +88,7 @@ class KiDDynamics:
             is_approx_drhod_dz=is_approx_drhod_dz,
         )
 
+        options = cmn.get_options(is_accurate=True)
         self.mpdata = MPDATA(
             nz=self.settings.nz,
             dt=self.settings.dt,

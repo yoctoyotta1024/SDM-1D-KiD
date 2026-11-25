@@ -1,0 +1,288 @@
+"""
+Copyright (c) 2026 MPI-M, Clara Bayley
+
+
+----- SDM-1D-KiD -----
+File: run_pysdm.py
+Project: scripts
+Created Date: Monday 23rd November 2026
+Author: Clara Bayley (CB)
+Additional Contributors:
+-----
+License: BSD 3-Clause "New" or "Revised" License
+https://opensource.org/licenses/BSD-3-Clause
+-----
+File Description:
+This script runs the entire workflow for the PySDM 1-D KiD (generate input,
+run model, post-process output and plot quickplots).
+"""
+
+# %% ---------------------------- GLOBAL IMPORTS ----------------------------- #
+import logging
+
+logging.basicConfig(
+    format="%(levelname)s: %(name)s(%(funcName)s): %(message)s", level=logging.INFO
+)
+logger = logging.getLogger("run_pysdm." + __name__)
+
+
+# %% ---------------------------- PARSE ARGUMENTS ---------------------------- #
+def parse_arguments():
+    import argparse
+    from pathlib import Path
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("path2build", type=Path, help="Path to build directory")
+    parser.add_argument("ensemble_name", type=str, help="name of ensemble")
+    parser.add_argument("ensemble_size", type=int, help="number of runs in ensemble")
+    parser.add_argument(
+        "--do_inputfiles",
+        action="store_true",  # default is False
+        help="Generate config, grid, and superdroplet initial condition files",
+    )
+    parser.add_argument(
+        "--do_run_model",
+        action="store_true",  # default is False
+        help="Run PySDM 1-D KiD",
+    )
+    parser.add_argument(
+        "--do_postprocess",
+        action="store_true",  # default is False
+        help="Post-process output",
+    )
+    parser.add_argument(
+        "--do_plot_results",
+        action="store_true",  # default is False
+        help="Plot quickplot results",
+    )
+
+    return parser.parse_args()
+
+
+# %% ---------------------- HELPER FUNCTION DEFINITIONS ---------------------- #
+def make_directories(
+    path2ensemble, tmppath, binpath, postprocpath, ensemble_name, ensemble_size
+):
+    if not path2ensemble.exists():
+        logger.warning(
+            "path to ensemble doesn't exist, making directory and its parents"
+        )
+
+    path2ensemble.mkdir(exist_ok=True, parents=True)
+    tmppath.mkdir(exist_ok=True, parents=False)
+    binpath.mkdir(exist_ok=True, parents=False)
+    postprocpath.mkdir(exist_ok=True, parents=False)
+
+    for n in range(ensemble_size):
+        run_name = f"{ensemble_name}_{n}"
+        outputdir = binpath / run_name
+        outputdir.mkdir(exist_ok=True, parents=False)
+
+
+# %% ----------------------- MAIN FUNCTION DEFINITIONS ----------------------- #
+def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
+    from pathlib import Path
+
+    import numpy as np
+    from run_cleo import generate_random_alpha_seeds
+
+    from sdm_1d_kid.pysdm import generate_inputfiles
+
+    ### grid_geometry
+    zmax = 3200  # maximum z-coord of domain [m]
+    zdelta = 25  # z-spacing of gridboxes in domain [m]
+
+    ### superdroplet_initialisation
+    ### *(!)Note:* if changing geomean or geosig, be mindful of MINRADIUS/MAXRADIUS in config.yaml
+    numconc = 50e6  # number conc. of initial droplet spectrum [m^-3]
+    geomean = 4.0e-8  # geometric mean radius of initial droplet spectrum [m]
+    geosig = 1.4  # geometric standard deviation of initial droplet spectrum
+    nsupers_pergbx = 256  # no. of super-droplets per gridbox to initialise
+    alpha = 1.0  # sampling param: 0 -> const xi, 1 -> xi follows spectrum
+    alpha_seeds = generate_random_alpha_seeds(
+        ensemble_size
+    )  # seeds for random number generator for alpha sampling (seed = an integer)
+    xi_by_dry_air_density = (
+        False  # if True, initialise superdroplets according to dry air density profile
+    )
+
+    ### SDM Runtime Parameter
+    kappa = (
+        1.243  # aerosol hygroscopicity factor (1.243 is approx. equal to Cleo default)
+    )
+    is_precip = True  # enable/disable precipitation scheme
+    collision_kernel = "berry"  # name of collision kernel (either "berry" or "long")
+
+    ### timesteps
+    timestep = 1.25  # time between SD collision [s]
+    t_end = 3600  # time span of integration from 0s to T_END [s]
+
+    ### KiD Dynamics
+    wmax_const = 3  # circa. max vertical velocity (is maximum w*rho_dry [kg m^-2 s^-1])
+    tscale_const = 600  # timescale of sinusoid [s]
+    psurf_hpa = 1000  # surface pressure [hPa]
+
+    ### KiD Dynamics Initial Atmospheric Profile (default is hydrostatic equilibrium)
+    is_exner_novapour = (
+        False  # use Exner profile without accounting for vapour (Shipway and Hill 2012)
+    )
+    is_exner_novapour_uniformrho = (
+        False  # use Exner also with constant air density (Hill et al. 2023)
+    )
+    is_approx_drhod_dz = (
+        False  # ignore water vapour component in hydrostatic equilibrium profile
+    )
+
+    ### Output Parameters ###
+    output_timestep = 1.25  # time between SDM observations [s]
+    cloud_water_radius_range = (
+        1e-6,
+        40e-6,
+    )  # range of droplet sizes to identify as "cloud" water [m]
+    rain_water_radius_range = (
+        cloud_water_radius_range[1],
+        np.inf,
+    )  # range of droplet sizes to identify as "rain" water [m]
+
+    for n in range(ensemble_size):
+        ### --- INPUT PARAMETERS FOR EACH RUN --- ###
+        ### labels and filenames for single run
+        run_name = f"{ensemble_name}_{n}"
+        config_filename = tmppath / f"config_{run_name}.yaml"
+        outputdir = binpath / f"{run_name}"
+
+        ### --- GENERATE INPUT FILES --- ###
+        path2sdm1dkid = Path(__file__).parent.parent.resolve()
+        src_config_filename = (
+            path2sdm1dkid / "src" / "extern" / "pysdm" / "draft_config.yaml"
+        )
+
+        config_params = {
+            "ensemble_name": ensemble_name,
+            "ensemble_size": ensemble_size,
+            "run_name": run_name,
+            "geomean": geomean,
+            "geosig": geosig,
+            "numconc": numconc,
+            "nsupers_pergbx": nsupers_pergbx,
+            "alpha": alpha,
+            "alpha_seed": alpha_seeds[n],
+            "xi_by_dry_air_density": xi_by_dry_air_density,
+            "zmax": zmax,
+            "zdelta": zdelta,
+            "wmax_const": wmax_const,
+            "tscale_const": tscale_const,
+            "psurf_hpa": psurf_hpa,
+            "is_exner_novapour": is_exner_novapour,
+            "is_exner_novapour_uniformrho": is_exner_novapour_uniformrho,
+            "is_approx_drhod_dz": is_approx_drhod_dz,
+            "timestep": timestep,
+            "t_end": t_end,
+            "is_precip": is_precip,
+            "collision_kernel": collision_kernel,
+            "kappa": kappa,
+            "outputdir": str(outputdir),
+            "output_timestep": output_timestep,
+            "cloud_water_radius_range": cloud_water_radius_range,
+            "rain_water_radius_range": rain_water_radius_range,
+        }
+
+        generate_inputfiles.main(
+            config_filename=config_filename,
+            src_config_filename=src_config_filename,
+            config_params=config_params,
+        )
+
+
+def run_model(tmppath):
+    import glob
+    import os
+
+    from sdm_1d_kid.pysdm import run
+
+    config_files = sorted(glob.glob(os.path.join(tmppath, "*.yaml")))
+    if not config_files:
+        raise ValueError(
+            f"Cannot run PySDM: no configuration files found in search for {tmppath}/*.yaml"
+        )
+    else:
+        for config_filename in config_files:
+            run.main(config_filename)
+
+
+def postprocess(tmppath, binpath, ensemble_name, ensemble_size, postprocpath):
+    import glob
+    import os
+
+    from sdm_1d_kid.pysdm import postprocess
+
+    config_files = sorted(
+        glob.glob(os.path.join(tmppath, f"config_{ensemble_name}_*.yaml"))
+    )
+    run_datasets = [binpath / f"{ensemble_name}_{n}" for n in range(ensemble_size)]
+
+    missing = [str(r) for r in run_datasets if not r.is_dir()]
+    run_datasets = [str(r) for r in run_datasets]
+    if not config_files or not run_datasets:
+        raise ValueError(
+            f"Cannot postprocess PySDM: no output data found in search of {binpath}"
+        )
+    elif missing:
+        raise ValueError(f"Cannot postprocess PySDM: missing output data for {missing}")
+    else:
+        postprocess.main(config_files[0], run_datasets, postprocpath=postprocpath)
+
+
+# %% ----------------------------- MAIN PROGRAM ------------------------------ #
+def main():
+    ### --- SCRIPT INPUT PARAMETERS --- ###
+    args = parse_arguments()
+    path2build = args.path2build.resolve()
+    do_inputfiles = args.do_inputfiles
+    do_run_model = args.do_run_model
+    do_postprocess = args.do_postprocess
+    do_plot_results = args.do_plot_results
+    ensemble_name = args.ensemble_name
+    ensemble_size = args.ensemble_size
+
+    ### directories for specific ensemble
+    path2ensemble = path2build / "pysdm" / ensemble_name
+    tmppath = path2ensemble / "tmp"
+    binpath = path2ensemble / "bin"
+    postprocpath = path2ensemble / "postproc"
+
+    if do_inputfiles:
+        logger.info("generating inputfiles")
+        make_directories(
+            path2ensemble, tmppath, binpath, postprocpath, ensemble_name, ensemble_size
+        )
+        inputfiles(tmppath, binpath, ensemble_name, ensemble_size)
+        logger.info("generating inputfiles -> completed")
+
+    if do_run_model:
+        logger.info("running PySDM 1-D KiD model")
+        run_model(tmppath)
+        logger.info("running PySDM 1-D KiD model -> completed")
+
+    if do_postprocess:
+        logger.info("post-processing PySDM 1-D KiD output")
+        postprocess(tmppath, binpath, ensemble_name, ensemble_size, postprocpath)
+        logger.info("post-processing PySDM 1-D KiD output -> completed")
+
+    if do_plot_results:
+        logger.info("plotting results of PySDM 1-D KiD")
+        # plot_results() ###WIP
+        logger.info("plotting results of PySDM 1-D KiD -> completed")
+
+    if (
+        not do_inputfiles
+        and not do_run_model
+        and not do_postprocess
+        and not do_plot_results
+    ):
+        logger.warning("run PySDM called without any action")
+
+
+# %% ----------------------------- RUN PROGRAM ------------------------------- #
+if __name__ == "__main__":
+    main()

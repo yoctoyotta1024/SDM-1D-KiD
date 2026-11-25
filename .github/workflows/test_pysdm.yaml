@@ -1,0 +1,50 @@
+name: build and run PySDM 1-D KiD
+
+on: pull_request
+
+jobs:
+  run_pysdm_1dkid:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialise Conda/Mamba
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: sdm1dkid
+          auto-activate-base: false
+          use-mamba: true
+          miniforge-version: 'latest'
+          conda-remove-defaults: true
+
+      - name: Update Mamba Environment
+        run: |
+          mamba env update -n sdm1dkid -f environment.yaml
+
+      - name: Environment Info
+        run: |
+          mamba info
+          mamba list
+          which uv && uv --version
+          uv sync --locked
+          uv run which python && uv run python --version
+
+      - name: Generate PySDM Initial Conditions
+        run: |
+          pwd && uv run which python
+          path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
+          uv run python ./scripts/run_pysdm.py ${path2build} "ci_test_pysdm" 2 --do_inputfiles
+
+      - name: Run PySDM 1-D KiD
+        run: |
+          path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
+          uv run python ./scripts/run_pysdm.py ${path2build} "ci_test_pysdm" 2 --do_run_model
+
+      - name: Postprocess PySDM 1-D KiD Ensemble of Runs
+        run: |
+          path2build="/home/runner/work/SDM-1D-KiD/SDM-1D-KiD/build"
+          uv run python ./scripts/run_pysdm.py ${path2build} "ci_test_pysdm" 2 --do_postprocess

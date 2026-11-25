@@ -173,18 +173,22 @@ def main():
     if do_inputfiles:
         logger.info("generating inputfiles")
         make_directories(path2ensemble, binpath, postprocpath)
+        logger.info("generating inputfiles -> completed")
 
     if do_run_model:
         logger.info("running bulk scheme 1-D KiD model")
         run_model(configs)
+        logger.info("running bulk scheme 1-D KiD model -> completed")
 
     if do_postprocess:
         logger.info("post-processing bulk scheme 1-D KiD output")
         postprocess(configs, binpath, postprocpath)
+        logger.info("post-processing bulk scheme 1-D KiD output -> completed")
 
     if do_plot_results:
         logger.info("plotting results of bulk scheme 1-D KiD")
         # plot_results() ###WIP
+        logger.info("plotting results of bulk scheme 1-D KiD -> completed")
 
     if (
         not do_inputfiles
