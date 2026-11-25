@@ -861,6 +861,7 @@ def create_ensemble_dataset(
         .pipe(add_mean_volume_diameter)
         .pipe(
             cmn.add_radar_reflectivity,
+            logger,
             description="(radius calculation excludes solute)",
         )
         .pipe(
