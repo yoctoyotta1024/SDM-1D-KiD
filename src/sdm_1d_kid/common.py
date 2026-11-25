@@ -318,7 +318,36 @@ def add_thermodynamics(ds):
     )
 
 
-### --- Generic post-processing functions --- ###
+### --- More Generic post-processing functions --- ###
+def add_radar_reflectivity(ds, logger, description=None):
+    """Add total radar reflectivity (sum over radius bins) in dBZ.
+
+    Gridboxes with zero reflectivity (no droplets) are NaN.
+
+    Args:
+        ds (xarray.Dataset): Dataset with "reflectivity_distrib" [mm^6 m^-3] on "radius_bin"
+          (if there is none, the dataset is returned unchanged).
+        description (str, optional): "description" attribute of the reflectivity.
+    """
+    import numpy as np
+
+    if "reflectivity_distrib" not in ds:
+        if "reflectivity_distrib" not in ds:
+            logger.warning(
+                "no 'reflectivity_distrib' in dataset, skipping reflectivity_dbz"
+            )
+        return ds
+
+    reflectivity = ds.reflectivity_distrib.sum("radius_bin")
+    dbz = 10 * np.log10(
+        reflectivity.where(reflectivity > 0.0)
+    )  # Z relative to 1 mm^6 m^-3
+    attrs = {"units": "dBZ", "long_name": "radar reflectivity (Rayleigh regime)"}
+    if description is not None:
+        attrs["description"] = description
+    return ds.assign(reflectivity_dbz=dbz.assign_attrs(attrs))
+
+
 def order_dimensions(ds):
     """Order dimensions of every variable as (ensemble, height, time, time_sds, radius_bin)."""
     return ds.transpose(

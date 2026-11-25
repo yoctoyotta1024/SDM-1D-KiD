@@ -522,29 +522,6 @@ def add_liquid_water(ds):
     return ds.assign(numconc=numconc, lwc=lwc, lwp=lwp)
 
 
-def add_radar_reflectivity(ds):
-    """Add total radar reflectivity (sum over radius bins) in dBZ.
-
-    Gridboxes with zero reflectivity (no droplets) are NaN.
-
-    Args:
-        ds (xarray.Dataset): Dataset with "reflectivity_distrib" (see process_superdroplets).
-    """
-    import numpy as np
-
-    reflectivity = ds.reflectivity_distrib.sum("radius_bin")
-    dbz = 10 * np.log10(
-        reflectivity.where(reflectivity > 0.0)
-    )  # Z relative to 1 mm^6 m^-3
-    return ds.assign(
-        reflectivity_dbz=dbz.assign_attrs(
-            units="dBZ",
-            long_name="radar reflectivity (Rayleigh regime)",
-            description="(radius calculation includes droplet solute mass)",
-        )
-    )
-
-
 def add_surface_precipitation(ds, obststep, rolling_window=None):
     """Convert precipitation to [mm] and add surface precipitation rate, accumulation and
     (optionally) rolling mean rate.
@@ -746,7 +723,11 @@ def create_ensemble_dataset(
         )
         .pipe(add_height, gbxs)
         .pipe(add_liquid_water)
-        .pipe(add_radar_reflectivity)
+        .pipe(
+            cmn.add_radar_reflectivity,
+            logger,
+            description="(radius calculation includes droplet solute mass)",
+        )
         .pipe(add_surface_precipitation, config["OBSTSTEP"], precip_rolling_window)
         .pipe(cmn.add_thermodynamics)
         .pipe(cmn.order_dimensions)
