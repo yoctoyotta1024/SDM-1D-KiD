@@ -51,7 +51,7 @@ def parse_arguments():
 
 
 # %% ------------------------- PYSDM OUTPUT FORMAT --------------------------- #
-def _radius_bin_coords(radius_edges, dim, description):
+def _radius_bin_coords(radius_edges, dim, description, long_name_prefix=""):
     """Coordinates of radius bins (as in CLEO's post-processing) along dimension 'dim'."""
     import numpy as np
 
@@ -62,8 +62,8 @@ def _radius_bin_coords(radius_edges, dim, description):
             np.sqrt(lower * upper),
             {
                 "units": "m",
-                "long_name": "radius of bin centre",
-                "description": "centre is geometric mean of bounds; " + description,
+                "long_name": f"{long_name_prefix}radius of bin centre",
+                "description": "centre is geometric mean of bounds" + description,
             },
         ),
         f"{dim}_lower": (
@@ -71,8 +71,7 @@ def _radius_bin_coords(radius_edges, dim, description):
             lower,
             {
                 "units": "m",
-                "long_name": "lower bound of radius bin",
-                "description": description,
+                "long_name": f"lower bound of {long_name_prefix}radius bin",
             },
         ),
         f"{dim}_upper": (
@@ -80,8 +79,7 @@ def _radius_bin_coords(radius_edges, dim, description):
             upper,
             {
                 "units": "m",
-                "long_name": "upper bound of radius bin",
-                "description": description,
+                "long_name": f"upper bound of {long_name_prefix}radius bin",
             },
         ),
         f"{dim}_dlnr": (
@@ -89,8 +87,8 @@ def _radius_bin_coords(radius_edges, dim, description):
             np.log(upper / lower),
             {
                 "units": "",
-                "long_name": "width of radius bin in ln(radius)",
-                "description": "width = ln(upper) - ln(lower)",
+                "long_name": f"width of {long_name_prefix}radius bin in ln(radius)",
+                "description": "width = ln|upper| - ln|lower|",
             },
         ),
     }
@@ -182,9 +180,13 @@ def add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol):
     ds = ds.assign_coords(time_sds=_time_sds_coord(spectra_times[itimes]))
 
     bin_descriptions = {
-        "radius_bin": "radius of sphere with the particle's water volume "
+        "radius_bin": "; radius of sphere with the particle's water volume "
         "(excludes solute volume)",
-        "radius_bin_dry": "dry radius of the particle (solute)",
+        "radius_bin_dry": "; dry radius of the particle (solute)",
+    }
+    bin_prefixes = {
+        "radius_bin": "",
+        "radius_bin_dry": "dry ",
     }
 
     spectra = (
@@ -212,7 +214,7 @@ def add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol):
             partial(_solute_mass_per_bin, rho_sol=rho_sol),
             {
                 "units": "g m^-3",
-                "description": f"dry volume * solute density {rho_sol:g} kg m^-3",
+                "description": f"assumes dry volume * solute density {rho_sol:g} kg m^-3",
             },
         ),
     )
@@ -231,7 +233,9 @@ def add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol):
             f"shape of {raw_name} doesn't match heights, radius bins and times of spectra"
         )
         ds = ds.assign_coords(
-            _radius_bin_coords(edges, dim, bin_descriptions[dim])
+            _radius_bin_coords(
+                edges, dim, bin_descriptions[dim], long_name_prefix=bin_prefixes[dim]
+            )
         ).assign(
             {
                 name: (
@@ -309,7 +313,7 @@ def open_run(rundir, sddiags_every, rho_sol):
     ds = xr.Dataset(
         data_vars,
         coords={
-            "time": ("time", time, {"units": "s", "long_name": "time"}),
+            "time": ("time", time, {"units": "s"}),
             "height": ("height", height),
         },
     )
@@ -581,7 +585,7 @@ def add_var_metadata(ds, cloud_water_radius_range, rain_water_radius_range):
         },
         "numconc_distrib": {
             "long_name": "number concentration in each radius bin",
-            "description": "(radius of water volume, i.e. excludes solute volume)",
+            "description": "(calculation bins by radius (of water volume) which excludes solute volume)",
         },
         "numconc_distrib_dry": {
             "long_name": "number concentration in each dry radius bin",

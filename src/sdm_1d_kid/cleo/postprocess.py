@@ -153,7 +153,7 @@ def _superdroplet_diagnostics(
     }
 
 
-def _radius_bin_coords(edges, dim, long_name_prefix=""):
+def _radius_bin_coords(edges, dim, long_name_prefix="", description=""):
     """Coordinates of radius bins along dimension 'dim': geometric mean of bin bounds
     ('dim'), bounds ('dim'_lower, 'dim'_upper) and width in ln(radius) ('dim'_dlnr)."""
     import numpy as np
@@ -166,7 +166,7 @@ def _radius_bin_coords(edges, dim, long_name_prefix=""):
             {
                 "units": "m",
                 "long_name": f"{long_name_prefix}radius of bin centre",
-                "description": "centre is geometric mean of bounds",
+                "description": "centre is geometric mean of bounds" + description,
             },
         ),
         f"{dim}_lower": (
@@ -312,8 +312,15 @@ def process_superdroplets(
                 "long_name": "time of superdroplet diagnostics",
             },
         ),
-        **_radius_bin_coords(radius_edges, "radius_bin"),
-        **_radius_bin_coords(dry_radius_edges, "radius_bin_dry", "dry "),
+        **_radius_bin_coords(
+            radius_edges, "radius_bin", description="; radius includes solute volume"
+        ),
+        **_radius_bin_coords(
+            dry_radius_edges,
+            "radius_bin_dry",
+            "dry ",
+            description="; dry radius of the particle (solute)",
+        ),
     }
 
     return ds.assign_coords(coords).assign(
@@ -348,7 +355,11 @@ def process_superdroplets(
         numconc_distrib=(
             dims_bins,
             (diags["numconc"] / vol_bins / 1e6).astype(np.float32),
-            {"units": "cm^-3", "long_name": "number concentration in each radius bin"},
+            {
+                "units": "cm^-3",
+                "long_name": "number concentration in each radius bin",
+                "description": "(calculation bins by radius which includes solute volume)",
+            },
         ),
         mass_distrib=(
             dims_bins,
