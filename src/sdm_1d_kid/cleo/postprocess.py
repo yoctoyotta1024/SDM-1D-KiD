@@ -72,7 +72,7 @@ def _superdroplet_diagnostics(
         msol (numpy.ndarray): Solute mass of each superdroplet [g].
         lwc (numpy.ndarray): Liquid water content of each gridbox [g m^-3] (from massmom1).
         ngbxs (int): Number of gridboxes.
-        consts (dict): CLEO constants (from setup .txt file).
+        consts (dict): Cleo constants (from setup .txt file).
         radius_edges (numpy.ndarray): Edges of (wet) radius bins [m].
         dry_radius_edges (numpy.ndarray): Edges of dry radius bins [m].
 
@@ -134,7 +134,7 @@ def _superdroplet_diagnostics(
     is_binned_dry = (ibin_dry >= 0) & (ibin_dry < nbins_dry)
     flat_dry = gbxindex[is_binned_dry] * nbins_dry + ibin_dry[is_binned_dry]
 
-    # droplet mass [g] as in CLEO's SuperdropAttrs::mass(), i.e. including the solute
+    # droplet mass [g] as in Cleo's SuperdropAttrs::mass(), i.e. including the solute
     mass = 4.0 / 3.0 * np.pi * rho_l * 1000 * radius**3 + (1.0 - rho_l / rho_sol) * msol
 
     return {
@@ -213,9 +213,9 @@ def process_superdroplets(
         - msol_mass_distrib: solute mass concentration [g m^-3]
 
     Droplet water mass is m_w = rho_l * (4/3 pi r^3 - msol / rho_sol) and its volume diameter
-    is D = (6 m_w / (pi rho_l))^(1/3). Droplet mass in mass_distrib is calculated as in CLEO's
+    is D = (6 m_w / (pi rho_l))^(1/3). Droplet mass in mass_distrib is calculated as in Cleo's
     SuperdropAttrs::mass() (i.e. including the solute), so that the sum over all bins equals
-    CLEO's massmom1. The radar reflectivity factor is Z = sum(xi * (2r)^6) / volume, which
+    Cleo's massmom1. The radar reflectivity factor is Z = sum(xi * (2r)^6) / volume, which
     assumes liquid spheres much smaller than the radar wavelength (Rayleigh regime). The dry
     radius is the radius of a sphere of the solute, r_dry = (3 msol / (4 pi rho_sol))^(1/3).
 
@@ -224,8 +224,8 @@ def process_superdroplets(
     warning is logged if there are any).
 
     Args:
-        ds (xarray.Dataset): CLEO output of a single run with superdroplet ragged arrays.
-        consts (dict): CLEO constants (from setup .txt file).
+        ds (xarray.Dataset): Cleo output of a single run with superdroplet ragged arrays.
+        consts (dict): Cleo constants (from setup .txt file).
         gbxvols (numpy.ndarray): Volume of each gridbox [m^3], ordered by gbxindex.
         radius_edges (numpy.ndarray): Edges of (wet) radius bins [m], monotonically increasing.
         dry_radius_edges (numpy.ndarray): Edges of dry radius bins [m], monotonically
@@ -402,7 +402,7 @@ def process_superdroplets(
 def open_ensemble(
     run_datasets, consts, gbxs, radius_edges, dry_radius_edges, sddiags_every
 ):
-    """Open CLEO datasets of each ensemble member as one dataset with an "ensemble" dimension.
+    """Open Cleo datasets of each ensemble member as one dataset with an "ensemble" dimension.
 
     Superdroplet (ragged array) data are processed into diagnostics and size distributions
     (see process_superdroplets) and then dropped, because their length differs between
@@ -411,8 +411,8 @@ def open_ensemble(
 
     Args:
         run_datasets (list[str]): Paths to the "*.zarr" dataset of each ensemble member.
-        consts (dict): CLEO constants (from setup .txt file).
-        gbxs (dict): CLEO gridboxes (from cleopy's pygbxsdat.get_gridboxes).
+        consts (dict): Cleo constants (from setup .txt file).
+        gbxs (dict): Cleo gridboxes (from cleopy's pygbxsdat.get_gridboxes).
         radius_edges (numpy.ndarray): Edges of (wet) radius bins [m].
         dry_radius_edges (numpy.ndarray): Edges of dry radius bins [m].
         sddiags_every (int): Superdroplet diagnostics at every 'sddiags_every'th output time.
@@ -468,7 +468,7 @@ def add_height(ds, gbxs):
 
     Args:
         ds (xarray.Dataset): Dataset with "gbxindex" dimension.
-        gbxs (dict): CLEO gridboxes (from cleopy's pygbxsdat.get_gridboxes).
+        gbxs (dict): Cleo gridboxes (from cleopy's pygbxsdat.get_gridboxes).
     """
     zhalf = gbxs["zhalf"]
     volume = gbxs["gbxvols"][0, 0, :]
@@ -501,7 +501,7 @@ def add_liquid_water(ds):
     superdroplet reservoir gridbox below the surface is excluded.
 
     Args:
-        ds (xarray.Dataset): Dataset with CLEO mass moments ("massmom0" [], "massmom1" [g])
+        ds (xarray.Dataset): Dataset with Cleo mass moments ("massmom0" [], "massmom1" [g])
           and gridbox volume and bounds (see add_height).
     """
     numconc = (ds.massmom0 / ds.volume / 1e6).assign_attrs(
@@ -526,7 +526,7 @@ def add_surface_precipitation(ds, obststep, rolling_window=None):
     """Convert precipitation to [mm] and add surface precipitation rate, accumulation and
     (optionally) rolling mean rate.
 
-    CLEO's "precip" is the depth of water [m] moving downwards through the lower boundary of
+    Cleo's "precip" is the depth of water [m] moving downwards through the lower boundary of
     each gridbox per output interval. It is converted to [mm] and surface precipitation is
     taken from the gridbox whose lower boundary is z = 0.
 
@@ -579,12 +579,12 @@ def add_surface_precipitation(ds, obststep, rolling_window=None):
 
 
 def add_var_metadata(ds):
-    """Add a "long_name" attribute (and a "description" for some variables) to each of CLEO's
+    """Add a "long_name" attribute (and a "description" for some variables) to each of Cleo's
     output variables.
 
-    Existing attributes (e.g. "units", or a "long_name" already written by CLEO) are never
+    Existing attributes (e.g. "units", or a "long_name" already written by Cleo) are never
     overwritten; only missing attributes are added. Raindrops are droplets with
-    radius >= 40 microns (see CLEO's libs/observers/massmoments_observer.hpp). Variables that
+    radius >= 40 microns (see Cleo's libs/observers/massmoments_observer.hpp). Variables that
     are not in the dataset are skipped.
     """
     attrs = {
@@ -639,7 +639,7 @@ def add_var_metadata(ds):
 
 
 def add_setup_metadata(ds, setup_filename):
-    """Copy the contents of CLEO's setup .txt file into the dataset's global attributes."""
+    """Copy the contents of Cleo's setup .txt file into the dataset's global attributes."""
     from pathlib import Path
 
     return ds.assign_attrs(
@@ -649,7 +649,7 @@ def add_setup_metadata(ds, setup_filename):
 
 
 def check_size_distributions(ds, rtol=1e-3):
-    """Log whether the sums over radius bins reproduce CLEO's mass moments.
+    """Log whether the sums over radius bins reproduce Cleo's mass moments.
 
     Number concentration and mass summed over all radius bins should equal "numconc" and
     "lwc" (from massmom0 and massmom1) at the sub-sampled times, unless superdroplets lie
@@ -692,12 +692,12 @@ def create_ensemble_dataset(
     sddiags_every,
     precip_rolling_window=None,
 ):
-    """Combine CLEO output of an ensemble of (one or more) runs into one post-processed dataset.
+    """Combine Cleo output of an ensemble of (one or more) runs into one post-processed dataset.
 
     Args:
-        config (dict): CLEO configuration (from setup .txt file).
-        consts (dict): CLEO constants (from setup .txt file).
-        gbxs (dict): CLEO gridboxes (from grid file).
+        config (dict): Cleo configuration (from setup .txt file).
+        consts (dict): Cleo constants (from setup .txt file).
+        gbxs (dict): Cleo gridboxes (from grid file).
         run_datasets (list): Paths to the ".zarr" dataset of each ensemble member.
         radius_edges (numpy.ndarray): Edges of (wet) radius bins for size distributions [m].
         dry_radius_edges (numpy.ndarray): Edges of dry radius bins for size distributions

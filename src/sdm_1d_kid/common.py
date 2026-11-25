@@ -280,7 +280,7 @@ def add_thermodynamics(ds):
     The dry-air potential temperature uses the partial pressure of dry air.
 
     Args:
-        ds (xarray.Dataset): Dataset with CLEO thermodynamics ("press" [hPa], "temp" [K]
+        ds (xarray.Dataset): Dataset with Cleo thermodynamics ("press" [hPa], "temp" [K]
           and "qvap" [g/kg]).
     """
     qvap = ds.qvap / 1000  # [kg/kg]
@@ -366,7 +366,7 @@ def metadata_corrections(ds):
 
     - "" -> "1": CF convention for dimensionless quantities
     - "micro-m" -> "um": parseable by UDUNITS and pint
-    - "g/Kg" -> "g/kg": typo in CLEO's output (v0.71.0, libs/observers/thermo_observer.hpp)
+    - "g/Kg" -> "g/kg": typo in Cleo's output (v0.71.0, libs/observers/thermo_observer.hpp)
 
     Only attributes are changed (the data are not loaded) and the input dataset is not modified.
     """

@@ -14,7 +14,7 @@ https://opensource.org/licenses/BSD-3-Clause
 -----
 File Description:
 Helper file for extra PySDM products, so that PySDM's output can be post-processed
-into the same superdroplet diagnostics as CLEO's (mass weighted mean volume diameter,
+into the same superdroplet diagnostics as Cleo's (mass weighted mean volume diameter,
 droplet mass and radar reflectivity distributions).
 """
 

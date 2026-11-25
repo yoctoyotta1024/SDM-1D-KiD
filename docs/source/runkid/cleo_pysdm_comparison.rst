@@ -1,4 +1,4 @@
-CLEO vs PySDM 1-D KiD: setup comparison status
+Cleo vs PySDM 1-D KiD: setup comparison status
 ===============================================
 
 This page doesn't document how to run a model with the KiD. Instead it lists

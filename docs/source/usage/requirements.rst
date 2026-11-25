@@ -3,7 +3,7 @@
 Requirements
 ============
 
-The following requirements ensure CLEO's build, compilation and execution on DKRZ's Levante HPC.
+The following requirements ensure Cleo's build, compilation and execution on DKRZ's Levante HPC.
 If they do not work, please :ref:`contact us <contact>` or `open a new
 issue <https://github.com/yoctoyotta1024/SDM-1D-KiD/issues/new>`_ on our GitHub repository.
 

@@ -17,7 +17,7 @@ Post-process ensemble of (one or more) runs of 1-D kid test case with PySDM
 into a single dataset.
 
 The post-processed dataset uses the same variable names, units, dimensions and
-diagnostics as the post-processed CLEO dataset (see sdm_1d_kid.cleo.postprocess)
+diagnostics as the post-processed Cleo dataset (see sdm_1d_kid.cleo.postprocess)
 wherever PySDM's output allows, and it also post-processes extra output variables
 from PySDM which Cleo doesn't have.
 """
@@ -52,7 +52,7 @@ def parse_arguments():
 
 # %% ------------------------- PYSDM OUTPUT FORMAT --------------------------- #
 def _radius_bin_coords(radius_edges, dim, description, long_name_prefix=""):
-    """Coordinates of radius bins (as in CLEO's post-processing) along dimension 'dim'."""
+    """Coordinates of radius bins (as in Cleo's post-processing) along dimension 'dim'."""
     import numpy as np
 
     lower, upper = radius_edges[:-1], radius_edges[1:]
