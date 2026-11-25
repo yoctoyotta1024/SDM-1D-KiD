@@ -206,7 +206,7 @@ def add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol):
     spectra = (
         (
             "wet_spectrum",  # raw_name for spectrum file
-            "radius_bins_edges",  # edges_name for bin edges file
+            "r_bins_edges",  # edges_name for bin edges file
             "numconc_distrib",  # name
             "radius_bin",  # dim
             _spectrum_per_bin,  # function to apply ``per_bin(spectrum, edges, itimes)``
@@ -242,7 +242,7 @@ def add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol):
         ),
         (
             "water_mass_per_radius_bin",
-            "radius_bins_edges",
+            "r_bins_edges",
             "mass_distrib",
             "radius_bin",
             partial(_convert_per_bin, factor=1000),  # [kg m^-3] -> [g m^-3]
@@ -253,7 +253,7 @@ def add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol):
         ),
         (
             "dry_volume_per_radius_bin",
-            "radius_bins_edges",
+            "r_bins_edges",
             "_mass_distrib_msol",  # temporary DSD of msol over wet radius edges (see below)
             "radius_bin",
             partial(_convert_per_bin, factor=rho_sol * 1000),  # [m^3 m^-3] -> [g m^-3]
@@ -261,7 +261,7 @@ def add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol):
         ),
         (
             "radius_sixth_power_per_radius_bin",
-            "radius_bins_edges",
+            "r_bins_edges",
             "reflectivity_distrib",
             "radius_bin",
             partial(
