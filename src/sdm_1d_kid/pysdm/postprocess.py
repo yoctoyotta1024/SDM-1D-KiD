@@ -127,6 +127,20 @@ def _solute_mass_per_bin(dry_volume, radius_edges, itimes, rho_sol):
     return np.transpose(msol, (2, 0, 1)).astype(np.float32)
 
 
+def _convert_per_bin(values, radius_edges, itimes, factor):
+    """For values summed over particles in each radius bin (see next comment),
+    convert by 'factor' and return with dims (time_sds, height, bin).
+
+    PySDM's SumPerRadiusBin products (see sdm_1d_kid.pysdm.helpers.products) are already
+    sums over the particles in each bin per volume of air, with shape
+    (height, bin, time of spectra), so they only need converting units.
+    """
+    import numpy as np
+
+    values = np.asarray(values[:, :, itimes])  # only loads sub-sampled times
+    return np.transpose(values * factor, (2, 0, 1)).astype(np.float32)
+
+
 # %% ------------------------ OPEN ENSEMBLE OF RUNS -------------------------- #
 def _load_npy(rundir, name, mmap=False):
     """Load PySDM output '<name>.npy' from directory 'rundir' (None if there is no such file).
@@ -191,30 +205,73 @@ def add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol):
 
     spectra = (
         (
-            "wet_spectrum",
-            "wet_spectrum",
-            "numconc_distrib",
-            "radius_bin",
-            _spectrum_per_bin,
-            {"units": "cm^-3"},
+            "wet_spectrum",  # raw_name for spectrum file
+            "radius_bins_edges",  # edges_name for bin edges file
+            "numconc_distrib",  # name
+            "radius_bin",  # dim
+            _spectrum_per_bin,  # function to apply ``per_bin(spectrum, edges, itimes)``
+            {
+                "units": "cm^-3",  # attrs
+                "long_name": "number concentration in each radius bin",
+                "description": "(calculation bins by radius of water volume, "
+                "which excludes solute volume)",
+            },
         ),
         (
             "dry_spectrum",
-            "dry_spectrum",
+            "r_bins_edges_dry",
             "numconc_distrib_dry",
             "radius_bin_dry",
             _spectrum_per_bin,
-            {"units": "cm^-3"},
+            {
+                "units": "cm^-3",
+                "long_name": "number concentration in each dry radius bin",
+            },
         ),
         (
             "dry_volume_spectrum",
-            "dry_spectrum",  # same bins as "dry_spectrum"
+            "r_bins_edges_dry",
             "msol_mass_distrib",
             "radius_bin_dry",
             partial(_solute_mass_per_bin, rho_sol=rho_sol),
             {
                 "units": "g m^-3",
+                "long_name": "solute mass concentration in each dry radius bin",
                 "description": f"assumes dry volume * solute density {rho_sol:g} kg m^-3",
+            },
+        ),
+        (
+            "water_mass_per_radius_bin",
+            "radius_bins_edges",
+            "mass_distrib",
+            "radius_bin",
+            partial(_convert_per_bin, factor=1000),  # [kg m^-3] -> [g m^-3]
+            {
+                "units": "g m^-3",
+                "description": "mass of water only, excludes solute mass",
+            },
+        ),
+        (
+            "dry_volume_per_radius_bin",
+            "radius_bins_edges",
+            "_mass_distrib_msol",  # temporary DSD of msol over wet radius edges (see below)
+            "radius_bin",
+            partial(_convert_per_bin, factor=rho_sol * 1000),  # [m^3 m^-3] -> [g m^-3]
+            {"units": "g m^-3"},
+        ),
+        (
+            "radius_sixth_power_per_radius_bin",
+            "radius_bins_edges",
+            "reflectivity_distrib",
+            "radius_bin",
+            partial(
+                _convert_per_bin, factor=2**6 * 1e18
+            ),  # sum r^6 [m^6] -> (2r)^6 [mm^6]
+            {
+                "units": "mm^6 m^-3",
+                "long_name": "radar reflectivity factor in each radius bin "
+                "(Rayleigh regime)",
+                "description": "(radius calculation excludes solute)",
             },
         ),
     )
@@ -223,7 +280,7 @@ def add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol):
         if spectrum is None:
             logger.info(f"no '{raw_name}' in {rundir}, skipping it")
             continue
-        edges = _load_npy(rundir, f"{edges_name}_radius_bins_edges")  # [m]
+        edges = _load_npy(rundir, edges_name)  # [m]
         if edges is None:
             raise ValueError(
                 f"Cannot postprocess '{raw_name}': no radius bin edges in {rundir}"
@@ -246,6 +303,16 @@ def add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol):
             }
         )
 
+    # update "mass_distrib" with droplet mass including the solute ("_mass_distrib_msol")
+    if "mass_distrib" in ds and "_mass_distrib_msol" in ds:
+        ds["mass_distrib"] = (ds.mass_distrib + ds["_mass_distrib_msol"]).assign_attrs(
+            units="g m^-3",
+            long_name="droplet mass concentration in each radius bin",
+            description=f"(includes solute mass; assumes solute density {rho_sol:g} "
+            "kg m^-3)",
+        )
+    ds = ds.drop_vars("_mass_distrib_msol", errors="ignore")
+
     return ds
 
 
@@ -254,7 +321,7 @@ def open_run(rundir, sddiags_every, rho_sol):
     and, for size distributions, (time_sds, height, radius_bin) and
     (time_sds, height, radius_bin_dry).
 
-    Variables are converted to CLEO's post-processed names and units where there is an
+    Variables are converted to Cleo's post-processed names and units where there is an
     equivalent. If no spectra were saved, there are no size distributions and
     "time_sds" is every 'sddiags_every'th output time.
 
@@ -290,6 +357,10 @@ def open_run(rundir, sddiags_every, rho_sol):
         ("nr", "numconc_rain", 1e-6, {"units": "cm^-3"}),
         ("super_droplet_count_per_gridbox", "nsupers", 1, {"units": ""}),
         ("peak_saturation", "peak_saturation", 1, {"units": ""}),
+        *(  # sum of xi * r^k over particles in gridbox (for add_mean_volume_diameter)
+            (f"radius_moment_{k}", f"radius_moment_{k}", 1, {"units": f"m^{k}"})
+            for k in range(5)
+        ),
     )
     data_vars = {}
     for raw_name, name, factor, attrs in products:
@@ -407,7 +478,7 @@ def add_liquid_water(ds):
     liquid water path, and the total number of superdroplets.
 
     PySDM's liquid water is the water mass of all particles (cloud, rain and haze), excluding
-    the solute mass, as in CLEO's "qcond". (A difference is in CLEO's "lwc" and "lwp" are
+    the solute mass, as in Cleo's "qcond". (A difference is in Cleo's "lwc" and "lwp" are
     calculated from massmom1, so they include the solute mass.) PySDM's mixing ratio is per mass
     of dry air, so LWC = qcond * rhod. LWP is the finite-volume sum of LWC * dz over gridboxes
     above the surface (z >= 0), so the superdroplet reservoir below the surface is excluded.
@@ -440,7 +511,7 @@ def add_liquid_water(ds):
 def add_incloud_numconc(ds, cloud_water_radius_range, lwc_threshold=1e-5):
     """Add in-cloud droplet number concentration at the times of the size distributions.
 
-    As in CLEO's post-processing (and Hill et al. 2023): droplets with radius >= 1 micron in
+    As in Cleo's post-processing (and Hill et al. 2023): droplets with radius >= 1 micron in
     gridboxes with LWC > 1e-5 kg m^-3 (zero outside cloud). PySDM's number concentration of
     droplets with radius >= 1 micron is the cloud plus rain number concentration.
 
@@ -471,6 +542,48 @@ def add_incloud_numconc(ds, cloud_water_radius_range, lwc_threshold=1e-5):
             description="(radius >= 1 micron, LWC > 1e-5 kg m^-3; "
             "zero outside cloud; LWC calculation excludes solute mass)",
         )
+    )
+
+
+def add_mean_volume_diameter(ds):
+    """Add mass weighted mean volume diameter and the standard deviation of diameter about it
+    at the times of the size distributions, as in Cleo's post-processing.
+
+    From the sums over all particles in each gridbox M_k = sum(xi * r^k) (PySDM's radius is of
+    the particle's water volume, so the solute is excluded (as in Cleo):
+        D_vol = sum(xi m D) / sum(xi m) = 2 M_4 / M_3,
+        sigma^2 = sum(xi (D - D_vol)^2) / (sum(xi) - 1)
+                = (4 M_2 - 4 D_vol M_1 + D_vol^2 M_0) / (M_0 - 1).
+    D_vol is NaN without water and sigma is NaN with fewer than 2 droplets. The raw moments
+    are dropped from the dataset.
+
+    Args:
+        ds (xarray.Dataset): Dataset with "radius_moment_0", ..., "radius_moment_4" [m^k] and
+          "time_sds" coordinate.
+    """
+    import numpy as np
+
+    names = [f"radius_moment_{k}" for k in range(5)]
+    if not all(name in ds for name in names):
+        logger.warning("no radius moments in dataset, skipping dvol and dvol_sigma")
+        return ds.drop_vars(names, errors="ignore")
+
+    m = [_at_time_sds(ds[name], ds.time_sds) for name in names]
+    dvol = (2 * m[4] / m[3]).where(m[3] > 0.0)  # [m]
+    variance = (4 * m[2] - 4 * dvol * m[1] + dvol**2 * m[0]) / (m[0] - 1)  # [m^2]
+    dvol_sigma = np.sqrt(variance.clip(min=0.0).where(m[0] > 1))  # [m] (clip round-off)
+
+    return ds.drop_vars(names).assign(
+        dvol=(dvol * 1e6).assign_attrs(
+            units="um",
+            long_name="mass weighted mean volume diameter",
+            description="(excludes solute mass in calculation)",
+        ),
+        dvol_sigma=(dvol_sigma * 1e6).assign_attrs(
+            units="um",
+            long_name="standard deviation of volume diameter about dvol",
+            description="(excludes solute mass in calculation)",
+        ),
     )
 
 
@@ -583,16 +696,6 @@ def add_var_metadata(ds, cloud_water_radius_range, rain_water_radius_range):
             "long_name": "peak saturation ratio during condensation substeps",
             "description": "(maximum since previous output time)",
         },
-        "numconc_distrib": {
-            "long_name": "number concentration in each radius bin",
-            "description": "(calculation bins by radius (of water volume) which excludes solute volume)",
-        },
-        "numconc_distrib_dry": {
-            "long_name": "number concentration in each dry radius bin",
-        },
-        "msol_mass_distrib": {
-            "long_name": "solute mass concentration in each dry radius bin",
-        },
     }
     return ds.assign(
         {
@@ -662,32 +765,57 @@ def drop_repeated_variables(ds):
 
 
 def check_size_distributions(ds, rtol=1e-3):
-    """Log whether the sum over radius bins reproduces PySDM's number concentration.
+    """Log whether the sums over radius bins reproduce PySDM's totals.
 
-    Number concentration summed over all radius bins should equal "numconc" at the
-    sub-sampled times, unless particles lie outside the radius bins. The maximum difference
-    is relative to the mean of the non-zero values; differences of order 1e-7 to 1e-5 are
-    expected from float32 output.
+    At the sub-sampled times:
+      - number concentration summed over all radius bins ("numconc_distrib") should equal
+        "numconc",
+      - droplet mass summed over all radius bins ("mass_distrib", water + solute) should
+        equal "lwc" (water only) plus the solute mass summed over all dry radius bins
+        ("msol_mass_distrib"),
+    unless particles lie outside the (wet or dry) radius bins. The maximum difference is
+    relative to the mean of the non-zero values of the total; differences of order 1e-7 to
+    1e-5 are expected from float32 output. Checks of variables not in the dataset are
+    skipped.
     """
     import numpy as np
 
-    distrib = "numconc_distrib"
-    if distrib not in ds:
-        return
-    binned = ds[distrib].sum("radius_bin")
-    reference = _at_time_sds(ds.numconc, ds.time_sds)
-    scale = float(np.abs(reference).where(reference != 0.0).mean())
-    if np.isnan(scale):
-        logger.info(f"numconc is zero everywhere, no check of {distrib}")
-        return
-    maxdiff = float(np.abs(binned - reference).max()) / scale
-    if maxdiff > rtol:
-        logger.warning(
-            f"sum over bins of {distrib} differs from numconc by up to {maxdiff:.2e} "
-            "(relative to non-zero mean of numconc)"
+    checks = []
+    if "numconc_distrib" in ds:
+        checks.append(
+            (
+                "numconc_distrib",  # binned distrib
+                "numconc",  # ref_name
+                ds.numconc_distrib.sum("radius_bin"),  # total from sum of bins
+                _at_time_sds(ds.numconc, ds.time_sds),  # reference total
+            )
         )
-    else:
-        logger.info(f"sum over bins of {distrib} matches numconc ({maxdiff:.2e})")
+    if "mass_distrib" in ds and "msol_mass_distrib" in ds:
+        checks.append(
+            (
+                "mass_distrib - msol_mass_distrib",  # binned distrib
+                "lwc",
+                ds.mass_distrib.sum("radius_bin")
+                - ds.msol_mass_distrib.sum("radius_bin_dry"),
+                _at_time_sds(ds.lwc, ds.time_sds),
+            )
+        )
+
+    for distrib, ref_name, binned, reference in checks:
+        scale = float(np.abs(reference).where(reference != 0.0).mean())
+        if np.isnan(scale):
+            logger.info(f"{ref_name} is zero everywhere, no check of {distrib}")
+            continue
+        maxdiff = float(np.abs(binned - reference).max()) / scale
+        if maxdiff > rtol:
+            logger.warning(
+                f"sum over bins of {distrib} differs from {ref_name} by up to "
+                f"{maxdiff:.2e} (relative to non-zero mean of {ref_name})"
+            )
+        else:
+            logger.info(
+                f"sum over bins of {distrib} matches {ref_name} ({maxdiff:.2e})"
+            )
 
 
 # %% ----------------------- CREATE ENSEMBLE DATASET ------------------------- #
@@ -730,6 +858,11 @@ def create_ensemble_dataset(
         .pipe(add_height, float(kid_config["zdelta"]))
         .pipe(add_liquid_water)
         .pipe(add_incloud_numconc, outputdata["cloud_water_radius_range"])
+        .pipe(add_mean_volume_diameter)
+        .pipe(
+            cmn.add_radar_reflectivity,
+            description="(radius calculation excludes solute)",
+        )
         .pipe(
             add_surface_precipitation,
             float(kid_config["timestep"]),

@@ -372,8 +372,8 @@ class PySDMKiDDynamics:
             endpoint=True,
         )
         spectra_edges = {
-            "wet_spectrum_radius_bins_edges": self.r_bins_edges,
-            "dry_spectrum_radius_bins_edges": self.r_bins_edges_dry,
+            "r_bins_edges": self.r_bins_edges,
+            "r_bins_edges_dry": self.r_bins_edges_dry,
         }
         for name, edges in spectra_edges.items():
             assert name not in self.output_products
