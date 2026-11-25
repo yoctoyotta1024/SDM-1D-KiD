@@ -36,6 +36,7 @@ from PySDM.impl.mesh import Mesh
 from PySDM.initialisation.sampling import spatial_sampling
 
 import sdm_1d_kid.common as cmn
+import sdm_1d_kid.pysdm.helpers.products as extra_products
 from sdm_1d_kid.pysdm.helpers.kinematic_1d import Kinematic1D
 from sdm_1d_kid.pysdm.helpers.mpdata_1d import MPDATA_1D
 from sdm_1d_kid.pysdm.helpers.settings import Settings
@@ -211,6 +212,20 @@ class PySDMKiDDynamics:
                 name="na", radius_range=(0, settings.cloud_water_radius_range[0])
             ),
             PySDM_products.SuperDropletCountPerGridbox(),
+            # sums of xi * r^k in each gridbox (for D_vol and its standard deviation)
+            *(
+                RadiusMoment(name=f"radius moment {k}")
+                for k, RadiusMoment in extra_products.RadiusMoments.items()
+            ),
+            # sums over particles in each wet radius bin (for mass and reflectivity distribs)
+            extra_products.WaterMassPerRadiusBin(
+                radius_bins_edges=settings.r_bins_edges,
+                name="water mass per radius bin",
+            ),
+            extra_products.RadiusSixthPowerPerRadiusBin(
+                radius_bins_edges=settings.r_bins_edges,
+                name="radius sixth power per radius bin",
+            ),
             PySDM_products.AmbientRelativeHumidity(name="RH", unit="%"),
             PySDM_products.AmbientPressure(name="p"),
             PySDM_products.AmbientTemperature(name="T"),
@@ -231,6 +246,11 @@ class PySDMKiDDynamics:
                         name="dry volume spectrum",
                         radius_bins_edges=settings.r_bins_edges_dry,
                         dry=True,
+                    ),
+                    # "dry volume" attribute only exists with condensation enabled
+                    extra_products.DryVolumePerRadiusBin(
+                        radius_bins_edges=settings.r_bins_edges,
+                        name="dry volume per radius bin",
                     ),
                 ]
             )
