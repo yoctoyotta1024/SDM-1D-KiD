@@ -171,7 +171,7 @@ class Settings:
         ### PySDM Output Settings
         self.number_of_bins = 128
         self.r_bins_edges_dry = np.geomspace(
-            1.0e-9 * si.m, 1e-6 * si.m, self.number_of_bins + 1
+            1.0e-9 * si.m, 1e-4 * si.m, self.number_of_bins + 1
         )
         self.r_bins_edges = np.geomspace(
             5.0e-9 * si.m, 5.0e-3 * si.m, self.number_of_bins + 1

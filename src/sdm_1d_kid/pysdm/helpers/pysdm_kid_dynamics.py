@@ -227,6 +227,11 @@ class PySDMKiDDynamics:
                         radius_bins_edges=settings.r_bins_edges_dry,
                         dry=True,
                     ),
+                    PySDM_products.ParticleVolumeVersusRadiusLogarithmSpectrum(
+                        name="dry volume spectrum",
+                        radius_bins_edges=settings.r_bins_edges_dry,
+                        dry=True,
+                    ),
                 ]
             )
         if settings.precip:

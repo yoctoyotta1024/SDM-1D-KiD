@@ -111,19 +111,153 @@ def _spectrum_per_bin(spectrum, radius_edges, itimes):
     return np.transpose(numconc, (2, 0, 1)).astype(np.float32)
 
 
+def _solute_mass_per_bin(dry_volume, radius_edges, itimes, rho_sol):
+    """Solute mass concentration in each dry radius bin [g m^-3] with dims
+    (time_sds, height, bin).
+
+    PySDM's ParticleVolumeVersusRadiusLogarithmSpectrum(dry=True) is the dry (solute)
+    volume per unit volume of air per unit ln(dry radius) [m^3 m^-3], with shape
+    (height, bin, time of spectra), so it is multiplied by the bin width in ln(radius) and
+    by the solute density to give the solute mass concentration in each bin. PySDM does not
+    track the solute density, so it must be given ('rho_sol').
+    """
+    import numpy as np
+
+    dlnr = np.diff(np.log(radius_edges))
+    dry_volume = np.asarray(dry_volume[:, :, itimes])  # only loads sub-sampled times
+    msol = dry_volume * dlnr[np.newaxis, :, np.newaxis] * rho_sol * 1000  # [g m^-3]
+    return np.transpose(msol, (2, 0, 1)).astype(np.float32)
+
+
 # %% ------------------------ OPEN ENSEMBLE OF RUNS -------------------------- #
-def open_run(rundir, sddiags_every):
+def _load_npy(rundir, name, mmap=False):
+    """Load PySDM output '<name>.npy' from directory 'rundir' (None if there is no such file).
+
+    With mmap=True the array is memory-mapped, i.e. only the parts that are used are read.
+    """
+    import numpy as np
+
+    file = rundir / f"{name}.npy"
+    if not file.is_file():
+        return None
+    return np.load(file, mmap_mode="r" if mmap else None)
+
+
+def _time_sds_coord(values):
+    """Coordinate of the times of the superdroplet diagnostics [s]."""
+    return (
+        "time_sds",
+        values,
+        {"units": "s", "long_name": "time of superdroplet diagnostics"},
+    )
+
+
+def add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol):
+    """Add size distributions of a single run at every 'sddiags_every'th time of PySDM's
+    spectra.
+
+    Adds the "time_sds" coordinate and, with dimensions (time_sds, height, radius_bin),
+    "numconc_distrib" and, with dimensions (time_sds, height, radius_bin_dry),
+    "numconc_distrib_dry" and "msol_mass_distrib". Spectra that are not in the output
+    directory are skipped.
+
+    Args:
+        ds (xarray.Dataset): Dataset of the run with "height" coordinate.
+        rundir (pathlib.Path): Directory of .npy output files of the run.
+        spectra_times (numpy.ndarray): Time each spectrum was saved [s] (NaN if not saved).
+        sddiags_every (int): Size distributions at every 'sddiags_every'th spectrum time.
+        rho_sol (float): Density of solute [kg m^-3] to convert dry volume into solute mass.
+    """
+    from functools import partial
+
+    import numpy as np
+
+    itimes = np.arange(0, len(spectra_times), sddiags_every)
+    nmissing = np.count_nonzero(np.isnan(spectra_times[itimes]))
+    if nmissing:
+        raise ValueError(
+            f"Cannot postprocess spectra in {rundir}: no spectrum saved at "
+            f"{nmissing} sub-sampled times"
+        )
+    ds = ds.assign_coords(time_sds=_time_sds_coord(spectra_times[itimes]))
+
+    bin_descriptions = {
+        "radius_bin": "radius of sphere with the particle's water volume "
+        "(excludes solute volume)",
+        "radius_bin_dry": "dry radius of the particle (solute)",
+    }
+
+    spectra = (
+        (
+            "wet_spectrum",
+            "wet_spectrum",
+            "numconc_distrib",
+            "radius_bin",
+            _spectrum_per_bin,
+            {"units": "cm^-3"},
+        ),
+        (
+            "dry_spectrum",
+            "dry_spectrum",
+            "numconc_distrib_dry",
+            "radius_bin_dry",
+            _spectrum_per_bin,
+            {"units": "cm^-3"},
+        ),
+        (
+            "dry_volume_spectrum",
+            "dry_spectrum",  # same bins as "dry_spectrum"
+            "msol_mass_distrib",
+            "radius_bin_dry",
+            partial(_solute_mass_per_bin, rho_sol=rho_sol),
+            {
+                "units": "g m^-3",
+                "description": f"dry volume * solute density {rho_sol:g} kg m^-3",
+            },
+        ),
+    )
+    for raw_name, edges_name, name, dim, per_bin, attrs in spectra:
+        spectrum = _load_npy(rundir, raw_name, mmap=True)
+        if spectrum is None:
+            logger.info(f"no '{raw_name}' in {rundir}, skipping it")
+            continue
+        edges = _load_npy(rundir, f"{edges_name}_radius_bins_edges")  # [m]
+        if edges is None:
+            raise ValueError(
+                f"Cannot postprocess '{raw_name}': no radius bin edges in {rundir}"
+            )
+        expected_shape = (ds.sizes["height"], len(edges) - 1, len(spectra_times))
+        assert spectrum.shape == expected_shape, (
+            f"shape of {raw_name} doesn't match heights, radius bins and times of spectra"
+        )
+        ds = ds.assign_coords(
+            _radius_bin_coords(edges, dim, bin_descriptions[dim])
+        ).assign(
+            {
+                name: (
+                    ("time_sds", "height", dim),
+                    per_bin(spectrum, edges, itimes),
+                    attrs,
+                )
+            }
+        )
+
+    return ds
+
+
+def open_run(rundir, sddiags_every, rho_sol):
     """Open PySDM .npy output of a single run as a dataset with dimensions (height, time)
     and, for size distributions, (time_sds, height, radius_bin) and
     (time_sds, height, radius_bin_dry).
 
     Variables are converted to CLEO's post-processed names and units where there is an
-    equivalent. Products that are not in the output directory (e.g. condensation or
-    collision products when those processes are disabled) are skipped.
+    equivalent. If no spectra were saved, there are no size distributions and
+    "time_sds" is every 'sddiags_every'th output time.
 
     Args:
         rundir (pathlib.Path): Directory of .npy output files of the run.
         sddiags_every (int): Size distributions at every 'sddiags_every'th spectrum time.
+        rho_sol (float): Density of solute [kg m^-3] to convert dry volume into solute mass.
     """
     from pathlib import Path
 
@@ -131,16 +265,10 @@ def open_run(rundir, sddiags_every):
     import xarray as xr
 
     rundir = Path(rundir)
-
-    def load(name, mmap=False):
-        file = rundir / f"{name}.npy"
-        if not file.is_file():
-            return None
-        return np.load(file, mmap_mode="r" if mmap else None)
-
-    time = load("t")  # [s]
-    height = load("z")  # [m] gridbox centres (including reservoir below surface)
-    dims = ("height", "time")
+    time = _load_npy(rundir, "t")  # [s]
+    height = _load_npy(
+        rundir, "z"
+    )  # [m] gridbox centres (incl. reservoir below surface)
 
     # (raw PySDM name, post-processed name, factor to convert units, attributes)
     products = (
@@ -161,16 +289,16 @@ def open_run(rundir, sddiags_every):
     )
     data_vars = {}
     for raw_name, name, factor, attrs in products:
-        values = load(raw_name)
+        values = _load_npy(rundir, raw_name)
         if values is None:
             logger.info(f"no '{raw_name}' in {rundir}, skipping it")
             continue
         assert values.shape == (len(height), len(time)), (
             f"unexpected shape of {raw_name}"
         )
-        data_vars[name] = (dims, values * factor, attrs)
+        data_vars[name] = (("height", "time"), values * factor, attrs)
 
-    surfprecip = load("surface_precipitation")  # [m s^-1] mean over previous timestep
+    surfprecip = _load_npy(rundir, "surface_precipitation")  # [m s^-1] over prev. step
     if surfprecip is not None:
         data_vars["surfprecip_rate"] = (
             "time",
@@ -186,76 +314,20 @@ def open_run(rundir, sddiags_every):
         },
     )
 
-    # size distributions at every 'sddiags_every'th time of PySDM's spectra
-    spectra_times = load("t_spectra")  # [s] NaN where no spectrum was saved
+    spectra_times = _load_npy(rundir, "t_spectra")  # [s] NaN where no spectrum saved
     if spectra_times is None or np.isnan(spectra_times).all():
         logger.info(
             f"no spectra saved in {rundir} (do_save_spectrum: False?), skipping them; "
             "time_sds is every 'sddiags_every'th output time instead"
         )
-        return ds.assign_coords(
-            time_sds=(
-                "time_sds",
-                time[::sddiags_every],
-                {"units": "s", "long_name": "time of superdroplet diagnostics"},
-            )
-        )
+        return ds.assign_coords(time_sds=_time_sds_coord(time[::sddiags_every]))
 
-    itimes = np.arange(0, len(spectra_times), sddiags_every)
-    if np.isnan(spectra_times[itimes]).any():
-        raise ValueError(
-            f"Cannot postprocess spectra in {rundir}: no spectrum saved at "
-            f"{np.count_nonzero(np.isnan(spectra_times[itimes]))} sub-sampled times"
-        )
-    ds = ds.assign_coords(
-        time_sds=(
-            "time_sds",
-            spectra_times[itimes],
-            {"units": "s", "long_name": "time of superdroplet diagnostics"},
-        )
-    )
-
-    spectra = (
-        (
-            "wet_spectrum",
-            "numconc_distrib",
-            "radius_bin",
-            "radius of sphere with the particle's water volume (excludes solute volume)",
-        ),
-        (
-            "dry_spectrum",
-            "numconc_distrib_dry",
-            "radius_bin_dry",
-            "dry (solute) radius of the particle",
-        ),
-    )
-    for raw_name, name, dim, description in spectra:
-        spectrum = load(raw_name, mmap=True)
-        if spectrum is None:
-            logger.info(f"no '{raw_name}' in {rundir}, skipping it")
-            continue
-        edges = load(f"{raw_name}_radius_bins_edges")  # [m]
-        if edges is None:
-            raise ValueError(
-                f"Cannot postprocess '{raw_name}': no radius bin edges in {rundir}"
-            )
-        assert spectrum.shape == (len(height), len(edges) - 1, len(spectra_times)), (
-            f"shape of {raw_name} doesn't match radius bins and times of spectra"
-        )
-        ds = ds.assign_coords(_radius_bin_coords(edges, dim, description)).assign(
-            {
-                name: (
-                    ("time_sds", "height", dim),
-                    _spectrum_per_bin(spectrum, edges, itimes),
-                    {"units": "cm^-3"},
-                )
-            }
-        )
+    ds = add_size_distributions(ds, rundir, spectra_times, sddiags_every, rho_sol)
 
     return ds
 
 
-def open_ensemble(run_datasets, sddiags_every):
+def open_ensemble(run_datasets, sddiags_every, rho_sol):
     """Open PySDM output of each ensemble member as one dataset with an "ensemble" dimension.
 
     All members must have identical times and heights (join="exact" raises an error
@@ -264,13 +336,14 @@ def open_ensemble(run_datasets, sddiags_every):
     Args:
         run_datasets (list[str]): Paths to the .npy output directory of each ensemble member.
         sddiags_every (int): Size distributions at every 'sddiags_every'th spectrum time.
+        rho_sol (float): Density of solute [kg m^-3] to convert dry volume into solute mass.
     """
     from pathlib import Path
 
     import xarray as xr
 
     ds = xr.concat(
-        [open_run(d, sddiags_every) for d in run_datasets],
+        [open_run(d, sddiags_every, rho_sol) for d in run_datasets],
         dim="ensemble",
         data_vars="all",
         coords="minimal",
@@ -513,6 +586,9 @@ def add_var_metadata(ds, cloud_water_radius_range, rain_water_radius_range):
         "numconc_distrib_dry": {
             "long_name": "number concentration in each dry radius bin",
         },
+        "msol_mass_distrib": {
+            "long_name": "solute mass concentration in each dry radius bin",
+        },
     }
     return ds.assign(
         {
@@ -615,6 +691,7 @@ def create_ensemble_dataset(
     config,
     run_datasets,
     sddiags_every,
+    rho_sol,
     precip_rolling_window=None,
 ):
     """Combine PySDM output of an ensemble of (one or more) runs into one post-processed
@@ -624,6 +701,8 @@ def create_ensemble_dataset(
         config (dict): PySDM configuration (from .yaml config file).
         run_datasets (list): Paths to the .npy output directory of each ensemble member.
         sddiags_every (int): Size distributions at every 'sddiags_every'th spectrum time.
+        rho_sol (float): Density of solute [kg m^-3] to convert PySDM's dry volume into
+          solute mass.
         precip_rolling_window (int, optional): Width of rolling mean of surface
           precipitation rate [number of output steps]; no rolling mean if None.
 
@@ -643,7 +722,7 @@ def create_ensemble_dataset(
         outputdata["cloud_water_radius_range"], outputdata["rain_water_radius_range"]
     )
     return (
-        open_ensemble(run_datasets, sddiags_every)
+        open_ensemble(run_datasets, sddiags_every, rho_sol)
         .pipe(add_height, float(kid_config["zdelta"]))
         .pipe(add_liquid_water)
         .pipe(add_incloud_numconc, outputdata["cloud_water_radius_range"])
@@ -678,15 +757,22 @@ def main(
 
     ### --- PARAMETERS FOR SUPERDROPLET DIAGNOSTICS --- ###
     sddiags_every = 10  # size distributions at every 'sddiags_every'th spectrum time
+    rho_sol = 2016.5  # [kg m^-3] solute density, matches Cleo (cleoconstants.hpp)
 
     with open(config_filename) as config_file:
         config = yaml.safe_load(config_file)
     ensemble_name = config["run_ensemble"]["ensemble_name"]
 
+    kappa = float(config["sdm_settings"]["kappa"])
+    assert kappa == 1.243, (
+        f"rho_sol=2016.5 assumes Cleo's NaCl solute (kappa=1.243), not kappa={kappa}"
+    )
+
     ds = create_ensemble_dataset(
         config,
         run_datasets,
         sddiags_every,
+        rho_sol,
         precip_rolling_window=precip_rolling_window,
     ).pipe(add_config_metadata, config_filename)
 
