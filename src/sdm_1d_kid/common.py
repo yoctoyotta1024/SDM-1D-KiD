@@ -203,6 +203,155 @@ def get_spectral_sampling_method(alpha_sampling):
 
 
 # %% -------------------------- Post-Processing ------------------------------ #
+### --- MetPy calculations on numpy blocks
+# (applied lazily with xarray.apply_ufunc) -- ###
+def _lazy(func, *arrays):
+    """Apply numpy function to (dask-backed) DataArrays block-wise without loading them."""
+    import xarray as xr
+
+    return xr.apply_ufunc(func, *arrays, dask="parallelized", output_dtypes=[float])
+
+
+def _vapour_pressure_hpa(press_hpa, qvap_kgkg):
+    from metpy import calc as mtpy_calc
+    from metpy.units import units
+
+    return (
+        mtpy_calc.vapor_pressure(press_hpa * units.hPa, qvap_kgkg * units("kg/kg"))
+        .to("hPa")
+        .magnitude
+    )
+
+
+def _theta_k(press_hpa, temp_k):
+    from metpy import calc as mtpy_calc
+    from metpy.units import units
+
+    return (
+        mtpy_calc.potential_temperature(press_hpa * units.hPa, temp_k * units.kelvin)
+        .to("K")
+        .magnitude
+    )
+
+
+def _theta_virtual_k(press_hpa, temp_k, qvap_kgkg):
+    from metpy import calc as mtpy_calc
+    from metpy.units import units
+
+    return (
+        mtpy_calc.virtual_potential_temperature(
+            press_hpa * units.hPa, temp_k * units.kelvin, qvap_kgkg * units("kg/kg")
+        )
+        .to("K")
+        .magnitude
+    )
+
+
+def _density_kgm3(press_hpa, temp_k, qvap_kgkg):
+    from metpy import calc as mtpy_calc
+    from metpy.units import units
+
+    return (
+        mtpy_calc.density(
+            press_hpa * units.hPa, temp_k * units.kelvin, qvap_kgkg * units("kg/kg")
+        )
+        .to("kg/m^3")
+        .magnitude
+    )
+
+
+def _relative_humidity_percent(press_hpa, temp_k, qvap_kgkg):
+    from metpy import calc as mtpy_calc
+    from metpy.units import units
+
+    return (
+        mtpy_calc.relative_humidity_from_mixing_ratio(
+            press_hpa * units.hPa, temp_k * units.kelvin, qvap_kgkg * units("kg/kg")
+        )
+        .to("percent")
+        .magnitude
+    )
+
+
+def add_thermodynamics(ds):
+    """Add vapour and dry-air pressures, densities, potential temperatures and relative humidity.
+
+    Densities and virtual potential temperature include water vapour but not condensate.
+    The dry-air potential temperature uses the partial pressure of dry air.
+
+    Args:
+        ds (xarray.Dataset): Dataset with CLEO thermodynamics ("press" [hPa], "temp" [K]
+          and "qvap" [g/kg]).
+    """
+    qvap = ds.qvap / 1000  # [kg/kg]
+    press_vapour = _lazy(_vapour_pressure_hpa, ds.press, qvap)
+    press_dry = ds.press - press_vapour  # [hPa]
+    rho = _lazy(_density_kgm3, ds.press, ds.temp, qvap)
+
+    return ds.assign(
+        relh=_lazy(_relative_humidity_percent, ds.press, ds.temp, qvap).assign_attrs(
+            units="%", long_name="relative humidity"
+        ),
+        theta=_lazy(_theta_k, ds.press, ds.temp).assign_attrs(
+            units="K", long_name="potential temperature"
+        ),
+        theta_dry=_lazy(_theta_k, press_dry, ds.temp).assign_attrs(
+            units="K",
+            long_name="dry air potential temperature",
+            description="(potential temperature from partial pressure of dry air)",
+        ),
+        theta_virtual=_lazy(_theta_virtual_k, ds.press, ds.temp, qvap).assign_attrs(
+            units="K", long_name="virtual potential temperature"
+        ),
+        rho=rho.assign_attrs(
+            units="kg m^-3", long_name="density of moist air (dry air + vapour)"
+        ),
+        rho_dry=(rho / (1 + qvap)).assign_attrs(
+            units="kg m^-3", long_name="density of dry air"
+        ),
+        press_vapour=press_vapour.assign_attrs(
+            units="hPa", long_name="partial pressure of water vapour"
+        ),
+        press_dry=press_dry.assign_attrs(
+            units="hPa", long_name="partial pressure of dry air"
+        ),
+    )
+
+
+### --- Generic post-processing functions --- ###
+def order_dimensions(ds):
+    """Order dimensions of every variable as (ensemble, height, time, time_sds, radius_bin)."""
+    return ds.transpose(
+        "ensemble",
+        "height",
+        "time",
+        "time_sds",
+        "radius_bin",
+        ...,
+        missing_dims="ignore",
+    )
+
+
+def metadata_corrections(ds):
+    """Correct non-standard "units" attributes of all variables and coordinates.
+
+    - "" -> "1": CF convention for dimensionless quantities
+    - "micro-m" -> "um": parseable by UDUNITS and pint
+    - "g/Kg" -> "g/kg": typo in CLEO's output (v0.71.0, libs/observers/thermo_observer.hpp)
+
+    Only attributes are changed (the data are not loaded) and the input dataset is not modified.
+    """
+    corrections = {"": "1", "micro-m": "um", "g/Kg": "g/kg"}
+
+    ds = ds.copy()  # shallow copy: new attributes dictionaries, same (lazy) data
+    for var in ds.variables.values():
+        units = var.attrs.get("units")
+        if units in corrections:
+            var.attrs["units"] = corrections[units]
+    return ds
+
+
+### --- Checks on final post-processed datasets --- ###
 def generic_check_variable(ds, logger, var, var2, source, source2, rtol):
     """Log whether 'var2' matches the reference 'var' to within relative tolerance 'rtol'."""
     import numpy as np

@@ -62,8 +62,8 @@ def _radius_bin_coords(radius_edges, dim, description):
             np.sqrt(lower * upper),
             {
                 "units": "m",
-                "long_name": "radius of bin centre (geometric mean of bounds)",
-                "description": description,
+                "long_name": "radius of bin centre",
+                "description": "centre is geometric mean of bounds; " + description,
             },
         ),
         f"{dim}_lower": (
@@ -87,7 +87,11 @@ def _radius_bin_coords(radius_edges, dim, description):
         f"{dim}_dlnr": (
             dim,
             np.log(upper / lower),
-            {"units": "", "long_name": "width of radius bin in ln(radius)"},
+            {
+                "units": "",
+                "long_name": "width of radius bin in ln(radius)",
+                "description": "width = ln(upper) - ln(lower)",
+            },
         ),
     }
 
@@ -497,41 +501,10 @@ def add_var_metadata(ds, cloud_water_radius_range, rain_water_radius_range):
             "long_name": "raindrop number concentration",
             "description": f"({rain})",
         },
-        "mean_radius": {
-            "long_name": "number weighted mean radius of all particles",
-            "description": "(radius excludes solute volume)",
-        },
-        "effective_radius_cloud": {
-            "long_name": "effective radius of cloud droplets",
-            "description": f"({cloud})",
-        },
         "nsupers": {"long_name": "number of superdroplets in gridbox"},
-        "vterm_rain": {
-            "long_name": "volume weighted mean terminal velocity of raindrops",
-            "description": f"({rain})",
-        },
         "peak_saturation": {
             "long_name": "peak saturation ratio during condensation substeps",
             "description": "(maximum since previous output time)",
-        },
-        "activating_rate": {
-            "long_name": "rate of activation events per mass of dry air",
-        },
-        "deactivating_rate": {
-            "long_name": "rate of deactivation events per mass of dry air",
-        },
-        "ripening_rate": {
-            "long_name": "rate of ripening events per mass of dry air",
-        },
-        "collision_rate": {
-            "long_name": "rate of collision events per mass of dry air",
-        },
-        "collision_deficit_rate": {
-            "long_name": "rate of collision deficit per mass of dry air",
-            "description": "(collisions that multiplicities could not represent)",
-        },
-        "coalescence_rate": {
-            "long_name": "rate of coalescence events per mass of dry air",
         },
         "numconc_distrib": {
             "long_name": "number concentration in each radius bin",
@@ -585,6 +558,7 @@ def check_radius_ranges(cloud_water_radius_range, rain_water_radius_range):
 
 
 def drop_repeated_variables(ds):
+    """Drop PySDM's own rhod/rh/thd where MetPy's recomputed values agree within rtol"""
     from sdm_1d_kid import common as cmn
 
     source2 = "PySDM"
@@ -658,7 +632,7 @@ def create_ensemble_dataset(
         diagnostics, (ensemble, height, time_sds) and (ensemble, height, time_sds,
         radius_bin) (or radius_bin_dry).
     """
-    from sdm_1d_kid.cleo import postprocess as cleo_postprocess
+    import sdm_1d_kid.common as cmn
 
     if not run_datasets:
         raise ValueError("Cannot postprocess PySDM runs: no run datasets given")
@@ -678,14 +652,14 @@ def create_ensemble_dataset(
             float(kid_config["timestep"]),
             precip_rolling_window,
         )
-        .pipe(cleo_postprocess.add_thermodynamics)
-        .pipe(cleo_postprocess.order_dimensions)
+        .pipe(cmn.add_thermodynamics)
+        .pipe(cmn.order_dimensions)
         .pipe(
             add_var_metadata,
             outputdata["cloud_water_radius_range"],
             outputdata["rain_water_radius_range"],
         )
-        .pipe(cleo_postprocess.metadata_corrections)
+        .pipe(cmn.metadata_corrections)
     )
 
 

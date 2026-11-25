@@ -16,8 +16,7 @@ File Description:
 Post-process ensemble of (one or more) runs of 1-D kid test case with the
 PyMPDATA bulk scheme into single dataset. The steps, variable names and units follow
 ``sdm_1d_kid.cleo.postprocess`` so that both datasets can be compared with the same
-diagnostics. The thermodynamic diagnostics, dimension ordering and units corrections
-are imported from there so that they are calculated identically for both models.
+diagnostics.
 """
 
 # %% ---------------------------- GLOBAL IMPORTS ----------------------------- #
@@ -206,11 +205,7 @@ def create_ensemble_dataset(run_datasets):
     Returns:
         xarray.Dataset with dimensions (ensemble, height, time).
     """
-    from sdm_1d_kid.cleo.postprocess import (
-        add_thermodynamics,
-        metadata_corrections,
-        order_dimensions,
-    )
+    import sdm_1d_kid.common as cmn
 
     if not run_datasets:
         raise ValueError("Cannot postprocess bulk scheme runs: no run datasets given")
@@ -222,9 +217,9 @@ def create_ensemble_dataset(run_datasets):
         .pipe(drop_ice)
         .pipe(convert_units)
         .pipe(add_liquid_water)
-        .pipe(add_thermodynamics)
-        .pipe(order_dimensions)
-        .pipe(metadata_corrections)
+        .pipe(cmn.add_thermodynamics)
+        .pipe(cmn.order_dimensions)
+        .pipe(cmn.metadata_corrections)
     )
 
 
