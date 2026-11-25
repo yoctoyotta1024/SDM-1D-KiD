@@ -146,18 +146,22 @@ dataset is written in ``/path/to/your/build/cleo/your_ensemble/postproc/``
 
 The dataset has dimensions ``(ensemble, height, time)``, plus
 ``(ensemble, height, time_sds)`` for the superdroplet diagnostics and
-``(ensemble, height, time_sds, radius_bin)`` for the superdroplet size distributions.
-The radius bins are geometrically spaced, i.e. equally spaced in logarithmic space.
-The superdroplet diagnostics are calculated every ``sddiags_every``-th output time,
-i.e. at the times of the ``time_sds`` coordinate. The parameters for these diagnostics,
-including the radius bins (``radius_min``, ``radius_max`` and ``nbins``), can be edited
-in the ``main`` function of ``postprocess.py``.
+``(ensemble, height, time_sds, radius_bin)`` or ``(ensemble, height, time_sds, radius_bin_dry)``
+for the superdroplet (dry) size distributions. The radius bins are geometrically spaced,
+i.e. equally spaced in logarithmic space. The superdroplet diagnostics are calculated
+every ``sddiags_every``-th output time, i.e. at the times of the ``time_sds`` coordinate.
+The parameters for these diagnostics, including the radius bins
+(``radius_min``, ``radius_max`` and ``nbins``, and likewise for dry radii),
+can be edited in the ``main`` function of ``postprocess.py``.
 
-In case you want to calculate water mass (i.e. without solute), you
-can simply do ``mwater_mass_distrib = ds.mass_distrib - ds.msol_mass_distrib``.
 
-The size distributions (``numconc_distrib``, ``mass_distrib``, ``msol_mass_distrib``
-and ``reflectivity_distrib``) are *not* normalised by the bin width. To normalise them,
+.. _normalising_distribs:
+
+Normalising the Droplet Size Distributions
+###########################################
+
+The size distributions (``numconc_distrib``, ``mass_distrib``, ``reflectivity_distrib``,
+``msol_mass_distrib``, etc.) are *not* normalised by the bin width. To normalise them,
 divide by the bin-width coordinates, e.g.
 
 .. code-block:: python
