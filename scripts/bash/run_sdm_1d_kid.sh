@@ -37,7 +37,7 @@ cleo_ensemble_size=2
 
 ### ------- extra run parameters for bulk scheme ------- ###
 bulk_ensemble_name="testing"
-bulk_ensemble_size=2
+bulk_ensemble_size=1
 ### ---------------------------------------------------- ###
 
 ### ------- extra run parameters for pysdm scheme ------- ###
