@@ -770,9 +770,9 @@ def check_size_distributions(ds, rtol=1e-3):
     At the sub-sampled times:
       - number concentration summed over all radius bins ("numconc_distrib") should equal
         "numconc",
-      - droplet mass summed over all radius bins ("mass_distrib", water + solute) should
-        equal "lwc" (water only) plus the solute mass summed over all dry radius bins
-        ("msol_mass_distrib"),
+      - droplet mass summed over all radius bins ("mass_distrib", water + solute) minus
+        the solute mass ("msol_mass_distrib", solute only) summed over all dry radius bins
+        should equal "lwc" (water only),
     unless particles lie outside the (wet or dry) radius bins. The maximum difference is
     relative to the mean of the non-zero values of the total; differences of order 1e-7 to
     1e-5 are expected from float32 output. Checks of variables not in the dataset are
