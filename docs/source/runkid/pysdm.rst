@@ -96,12 +96,16 @@ edited in the PySDM ``Settings`` class (``src/sdm_1d_kid/pysdm/helpers/settings.
 and in ``pysdm/postprocess.py``.
 
 In PySDM the calculations often exclude the mass/volume of solute whereas Cleo includes it.
-For example PySDM's ``radius_bin`` (also lower and upper),
-``lwc``, ``lwp`` and ``numconc_d`` exclude the solute mass/volume, whereas in
-Cleo it includes the solute mass/volume. The differences are likely to be very small,
-except when comparing aerosol/haze. In the description of certain variables you can see
-whether or not they account for solute mass and compare with Cleo (see below).
-
+PySDM's radius excludes the solute volume, so ``radius_bin`` (also ``_lower``
+and ``_upper``), and the distributions binned by it (``numconc_distrib``, ``mass_distrib``,
+``reflectivity_distrib``), as well as ``reflectivity_dbz``, ``lwc``, ``lwp`` and ``numconc_d``,
+exclude the solute mass/volume. In contrast, in Cleo all those variables account for solute.
+Meanwhile, PySDM's ``mass_distrib`` (though not its bins) includes the solute mass (by assuming
+the solute density ``rho_sol`` as done also by ``msol_mass_distrib``), and both PySDM's and
+Cleo's ``dvol`` and ``dvol_sigma`` exclude the solute volume. The differences between PySDM and
+Cleo from including/excluding solute are likely to be very small, except when comparing aerosol/haze.
+In the description of certain variables you can see whether or not they account for solute
+mass/volume and compare that with Cleo (see below).
 
 Comparing PySDM and Cleo Datasets
 ###################################
