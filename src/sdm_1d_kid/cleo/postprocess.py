@@ -604,6 +604,7 @@ def add_thermodynamics(ds):
     """Add vapour and dry-air pressures, densities, potential temperatures and relative humidity.
 
     Densities and virtual potential temperature include water vapour but not condensate.
+    The dry-air potential temperature uses the partial pressure of dry air.
 
     Args:
         ds (xarray.Dataset): Dataset with CLEO thermodynamics ("press" [hPa], "temp" [K]
@@ -611,6 +612,7 @@ def add_thermodynamics(ds):
     """
     qvap = ds.qvap / 1000  # [kg/kg]
     press_vapour = _lazy(_vapour_pressure_hpa, ds.press, qvap)
+    press_dry = ds.press - press_vapour  # [hPa]
     rho = _lazy(_density_kgm3, ds.press, ds.temp, qvap)
 
     return ds.assign(
@@ -619,6 +621,11 @@ def add_thermodynamics(ds):
         ),
         theta=_lazy(_theta_k, ds.press, ds.temp).assign_attrs(
             units="K", long_name="potential temperature"
+        ),
+        theta_dry=_lazy(_theta_k, press_dry, ds.temp).assign_attrs(
+            units="K",
+            long_name="dry air potential temperature",
+            description="(potential temperature from partial pressure of dry air)",
         ),
         theta_virtual=_lazy(_theta_virtual_k, ds.press, ds.temp, qvap).assign_attrs(
             units="K", long_name="virtual potential temperature"
@@ -632,7 +639,7 @@ def add_thermodynamics(ds):
         press_vapour=press_vapour.assign_attrs(
             units="hPa", long_name="partial pressure of water vapour"
         ),
-        press_dry=(ds.press - press_vapour).assign_attrs(
+        press_dry=press_dry.assign_attrs(
             units="hPa", long_name="partial pressure of dry air"
         ),
     )
@@ -831,8 +838,8 @@ def main(
     sddiags_every = (
         10  # all superdroplet diagnostics at every 'sddiags_every'th output time
     )
-    radius_min = 1.0e-8  # lower edge of smallest radius bin [m]
-    radius_max = 1.0e-2  # upper edge of largest radius bin [m]
+    radius_min = 5.0e-9  # lower edge of smallest radius bin [m]
+    radius_max = 5.0e-3  # upper edge of largest radius bin [m]
     nbins = 128  # number of (log-spaced) radius bins
 
     with open(config_filename) as config_file:
