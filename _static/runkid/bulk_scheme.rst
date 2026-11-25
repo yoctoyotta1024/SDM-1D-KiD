@@ -108,6 +108,11 @@ subset of the post-processed ensemble dataset from Cleo, except it may also
 contain the variables ``qrain`` and ``rhod``, which the Cleo dataset does not have.
 Also the bulk scheme's ``lwc`` and ``lwp`` contain no solute (unlike Cleo's).
 
+.. _interp_datasets:
+
+Interpolating Between Datasets
+##################################
+
 The bulk scheme output may not be on the same timestep as Cleo's outputs,
 so to compare the two datasets you may need to match their times, e.g.
 

@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Running the 1-D KiD with PyMPDATA Bulk Scheme" href="bulk_scheme.html"><link rel="prev" title="Running the 1-D KiD" href="runkid.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Running the 1-D KiD with PySDM" href="pysdm.html"><link rel="prev" title="Running the 1-D KiD" href="runkid.html">
 
     <!-- Generated with Sphinx 9.2.0 and Furo 2025.12.19 -->
         <title>Running the 1-D KiD with Cleo - SDM-1D-KiD 0.0.0 documentation</title>
@@ -196,7 +196,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../usage/requirements.html">Requirements</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="runkid.html">Running the 1-D KiD</a><input aria-label="Toggle navigation of Running the 1-D KiD" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Running the 1-D KiD with Cleo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pysdm.html">Running the 1-D KiD with PySDM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="bulk_scheme.html">Running the 1-D KiD with PyMPDATA Bulk Scheme</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cleo_pysdm_comparison.html">Cleo vs PySDM 1-D KiD: setup comparison status</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/yoctoyotta1024/SDM-1D-KiD.git">GitHub Repo</a></li>
@@ -351,16 +353,17 @@ dataset is written in <code class="docutils literal notranslate"><span class="pr
 (see <code class="docutils literal notranslate"><span class="pre">run_cleo.py</span></code>) as <code class="docutils literal notranslate"><span class="pre">your_ensemble.zarr</span></code>.</p>
 <p>The dataset has dimensions <code class="docutils literal notranslate"><span class="pre">(ensemble,</span> <span class="pre">height,</span> <span class="pre">time)</span></code>, plus
 <code class="docutils literal notranslate"><span class="pre">(ensemble,</span> <span class="pre">height,</span> <span class="pre">time_sds)</span></code> for the superdroplet diagnostics and
-<code class="docutils literal notranslate"><span class="pre">(ensemble,</span> <span class="pre">height,</span> <span class="pre">time_sds,</span> <span class="pre">radius_bin)</span></code> for the superdroplet size distributions.
-The radius bins are geometrically spaced, i.e. equally spaced in logarithmic space.
-The superdroplet diagnostics are calculated every <code class="docutils literal notranslate"><span class="pre">sddiags_every</span></code>-th output time,
-i.e. at the times of the <code class="docutils literal notranslate"><span class="pre">time_sds</span></code> coordinate. The parameters for these diagnostics,
-including the radius bins (<code class="docutils literal notranslate"><span class="pre">radius_min</span></code>, <code class="docutils literal notranslate"><span class="pre">radius_max</span></code> and <code class="docutils literal notranslate"><span class="pre">nbins</span></code>), can be edited
-in the <code class="docutils literal notranslate"><span class="pre">main</span></code> function of <code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code>.</p>
-<p>In case you want to calculate water mass (i.e. without solute), you
-can simply do <code class="docutils literal notranslate"><span class="pre">mwater_mass_distrib</span> <span class="pre">=</span> <span class="pre">ds.mass_distrib</span> <span class="pre">-</span> <span class="pre">ds.msol_mass_distrib</span></code>.</p>
-<p>The size distributions (<code class="docutils literal notranslate"><span class="pre">numconc_distrib</span></code>, <code class="docutils literal notranslate"><span class="pre">mass_distrib</span></code>, <code class="docutils literal notranslate"><span class="pre">msol_mass_distrib</span></code>
-and <code class="docutils literal notranslate"><span class="pre">reflectivity_distrib</span></code>) are <em>not</em> normalised by the bin width. To normalise them,
+<code class="docutils literal notranslate"><span class="pre">(ensemble,</span> <span class="pre">height,</span> <span class="pre">time_sds,</span> <span class="pre">radius_bin)</span></code> or <code class="docutils literal notranslate"><span class="pre">(ensemble,</span> <span class="pre">height,</span> <span class="pre">time_sds,</span> <span class="pre">radius_bin_dry)</span></code>
+for the superdroplet (dry) size distributions. The radius bins are geometrically spaced,
+i.e. equally spaced in logarithmic space. The superdroplet diagnostics are calculated
+every <code class="docutils literal notranslate"><span class="pre">sddiags_every</span></code>-th output time, i.e. at the times of the <code class="docutils literal notranslate"><span class="pre">time_sds</span></code> coordinate.
+The parameters for these diagnostics, including the radius bins
+(<code class="docutils literal notranslate"><span class="pre">radius_min</span></code>, <code class="docutils literal notranslate"><span class="pre">radius_max</span></code> and <code class="docutils literal notranslate"><span class="pre">nbins</span></code>, and likewise for dry radii),
+can be edited in the <code class="docutils literal notranslate"><span class="pre">main</span></code> function of <code class="docutils literal notranslate"><span class="pre">postprocess.py</span></code>.</p>
+<section id="normalising-the-droplet-size-distributions">
+<span id="normalising-distribs"></span><h4>Normalising the Droplet Size Distributions<a class="headerlink" href="#normalising-the-droplet-size-distributions" title="Link to this heading">¶</a></h4>
+<p>The size distributions (<code class="docutils literal notranslate"><span class="pre">numconc_distrib</span></code>, <code class="docutils literal notranslate"><span class="pre">mass_distrib</span></code>, <code class="docutils literal notranslate"><span class="pre">reflectivity_distrib</span></code>,
+<code class="docutils literal notranslate"><span class="pre">msol_mass_distrib</span></code>, etc.) are <em>not</em> normalised by the bin width. To normalise them,
 divide by the bin-width coordinates, e.g.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">xarray</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">xr</span>
 
@@ -391,10 +394,16 @@ the linear bin widths grow with r, so it will change the shape of the distributi
 (to float32 precision), e.g.
 <code class="docutils literal notranslate"><span class="pre">(dndlnr</span> <span class="pre">*</span> <span class="pre">ds.radius_bin_dlnr).sum(&quot;radius_bin&quot;)</span></code> ≈ <code class="docutils literal notranslate"><span class="pre">ds.numconc.sel(time=ds.time_sds)</span></code>.</p>
 </section>
+</section>
 <section id="plotting-the-quicklooks">
 <span id="do-plot-results-cleo"></span><h3>Plotting the “Quicklooks”<a class="headerlink" href="#plotting-the-quicklooks" title="Link to this heading">¶</a></h3>
 <p>###WIP</p>
 </section>
+</section>
+<section id="comparison-to-the-pysdm-1-d-kid">
+<h2>Comparison to the PySDM 1-D KiD<a class="headerlink" href="#comparison-to-the-pysdm-1-d-kid" title="Link to this heading">¶</a></h2>
+<p>You may want to have a look at the similarities and differences between the PySDM
+and Cleo KiD setups here: <a class="reference internal" href="cleo_pysdm_comparison.html"><span class="doc">Cleo vs PySDM 1-D KiD: setup comparison status</span></a>.</p>
 </section>
 </section>
 
@@ -403,12 +412,12 @@ the linear bin widths grow with r, so it will change the shape of the distributi
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="bulk_scheme.html">
+          <a class="next-page" href="pysdm.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Running the 1-D KiD with PyMPDATA Bulk Scheme</div>
+                <div class="title">Running the 1-D KiD with PySDM</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -433,7 +442,7 @@ the linear bin widths grow with r, so it will change the shape of the distributi
             
             <a href="https://github.com/pradyunsg/furo">Furo</a>
             <div class="last-updated">
-              Last updated on 20 November 2026</div>
+              Last updated on 25 November 2026</div>
           </div>
           <div class="right-details">
             
@@ -459,10 +468,14 @@ the linear bin widths grow with r, so it will change the shape of the distributi
 <li><a class="reference internal" href="#running-cleo">Running Cleo</a><ul>
 <li><a class="reference internal" href="#generating-inputfiles">Generating Inputfiles</a></li>
 <li><a class="reference internal" href="#running-i-e-time-stepping-the-model">Running, i.e. Time-stepping, the Model</a></li>
-<li><a class="reference internal" href="#post-processing-the-output">Post-Processing the Output</a></li>
+<li><a class="reference internal" href="#post-processing-the-output">Post-Processing the Output</a><ul>
+<li><a class="reference internal" href="#normalising-the-droplet-size-distributions">Normalising the Droplet Size Distributions</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#plotting-the-quicklooks">Plotting the “Quicklooks”</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#comparison-to-the-pysdm-1-d-kid">Comparison to the PySDM 1-D KiD</a></li>
 </ul>
 </li>
 </ul>

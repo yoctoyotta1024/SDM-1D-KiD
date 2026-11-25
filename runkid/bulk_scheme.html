@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Our Docs" href="../usage/ourdocs.html"><link rel="prev" title="Running the 1-D KiD with Cleo" href="cleo.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Cleo vs PySDM 1-D KiD: setup comparison status" href="cleo_pysdm_comparison.html"><link rel="prev" title="Running the 1-D KiD with PySDM" href="pysdm.html">
 
     <!-- Generated with Sphinx 9.2.0 and Furo 2025.12.19 -->
         <title>Running the 1-D KiD with PyMPDATA Bulk Scheme - SDM-1D-KiD 0.0.0 documentation</title>
@@ -196,7 +196,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../usage/requirements.html">Requirements</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="runkid.html">Running the 1-D KiD</a><input aria-label="Toggle navigation of Running the 1-D KiD" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="cleo.html">Running the 1-D KiD with Cleo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pysdm.html">Running the 1-D KiD with PySDM</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Running the 1-D KiD with PyMPDATA Bulk Scheme</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cleo_pysdm_comparison.html">Cleo vs PySDM 1-D KiD: setup comparison status</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference external" href="https://github.com/yoctoyotta1024/SDM-1D-KiD.git">GitHub Repo</a></li>
@@ -321,6 +323,8 @@ directly.</p>
 subset of the post-processed ensemble dataset from Cleo, except it may also
 contain the variables <code class="docutils literal notranslate"><span class="pre">qrain</span></code> and <code class="docutils literal notranslate"><span class="pre">rhod</span></code>, which the Cleo dataset does not have.
 Also the bulk scheme’s <code class="docutils literal notranslate"><span class="pre">lwc</span></code> and <code class="docutils literal notranslate"><span class="pre">lwp</span></code> contain no solute (unlike Cleo’s).</p>
+<section id="interpolating-between-datasets">
+<span id="interp-datasets"></span><h4>Interpolating Between Datasets<a class="headerlink" href="#interpolating-between-datasets" title="Link to this heading">¶</a></h4>
 <p>The bulk scheme output may not be on the same timestep as Cleo’s outputs,
 so to compare the two datasets you may need to match their times, e.g.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -341,6 +345,7 @@ otherwise <code class="docutils literal notranslate"><span class="pre">interp</s
 range). To compare with Cleo’s superdroplet diagnostics, select their times instead,
 e.g. <code class="docutils literal notranslate"><span class="pre">ds_bulk_matched.sel(time=ds_cleo.time_sds)</span></code>.</p>
 </section>
+</section>
 <section id="plotting-the-quicklooks">
 <span id="do-plot-results-bulk"></span><h3>Plotting the “Quicklooks”<a class="headerlink" href="#plotting-the-quicklooks" title="Link to this heading">¶</a></h3>
 <p>###WIP</p>
@@ -353,23 +358,23 @@ e.g. <code class="docutils literal notranslate"><span class="pre">ds_bulk_matche
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../usage/ourdocs.html">
+          <a class="next-page" href="cleo_pysdm_comparison.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Our Docs</div>
+                <div class="title">Cleo vs PySDM 1-D KiD: setup comparison status</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="cleo.html">
+          <a class="prev-page" href="pysdm.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Running the 1-D KiD with Cleo</div>
+                <div class="title">Running the 1-D KiD with PySDM</div>
                 
               </div>
             </a>
@@ -383,7 +388,7 @@ e.g. <code class="docutils literal notranslate"><span class="pre">ds_bulk_matche
             
             <a href="https://github.com/pradyunsg/furo">Furo</a>
             <div class="last-updated">
-              Last updated on 20 November 2026</div>
+              Last updated on 25 November 2026</div>
           </div>
           <div class="right-details">
             
@@ -408,7 +413,10 @@ e.g. <code class="docutils literal notranslate"><span class="pre">ds_bulk_matche
 <li><a class="reference internal" href="#running-the-pympdata-bulk-scheme">Running The PyMPDATA Bulk Scheme</a><ul>
 <li><a class="reference internal" href="#generating-inputfiles">Generating Inputfiles</a></li>
 <li><a class="reference internal" href="#running-i-e-time-stepping-the-model">Running, i.e. Time-stepping, the Model</a></li>
-<li><a class="reference internal" href="#post-processing-the-output">Post-Processing the Output</a></li>
+<li><a class="reference internal" href="#post-processing-the-output">Post-Processing the Output</a><ul>
+<li><a class="reference internal" href="#interpolating-between-datasets">Interpolating Between Datasets</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#plotting-the-quicklooks">Plotting the “Quicklooks”</a></li>
 </ul>
 </li>

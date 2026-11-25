@@ -1,12 +1,14 @@
 {
-    "index": 0.015,
+    "index": 0.01,
     "references": 0.002,
-    "runkid/bulk_scheme": 0.01,
-    "runkid/cleo": 0.015,
-    "runkid/runkid": 0.002,
-    "usage/contact": 0.002,
-    "usage/contributing": 0.02,
-    "usage/getstart": 0.006,
+    "runkid/bulk_scheme": 0.008,
+    "runkid/cleo": 0.011,
+    "runkid/cleo_pysdm_comparison": 0.012,
+    "runkid/pysdm": 0.008,
+    "runkid/runkid": 0.001,
+    "usage/contact": 0.001,
+    "usage/contributing": 0.011,
+    "usage/getstart": 0.004,
     "usage/ourdocs": 0.002,
-    "usage/requirements": 0.007
+    "usage/requirements": 0.005
 }
