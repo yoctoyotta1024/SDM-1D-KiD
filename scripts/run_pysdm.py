@@ -107,7 +107,9 @@ def inputfiles(tmppath, binpath, ensemble_name, ensemble_size):
     )
 
     ### SDM Runtime Parameter
-    kappa = 0.9  # aerosol hygroscopicity factor
+    kappa = (
+        1.243  # aerosol hygroscopicity factor (1.243 is approx. equal to Cleo default)
+    )
     is_precip = True  # enable/disable precipitation scheme
     collision_kernel = "berry"  # name of collision kernel (either "berry" or "long")
 
