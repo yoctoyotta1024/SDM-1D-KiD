@@ -2,6 +2,55 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## [v0.4.0](https://github.com/yoctoyotta1024/SDM-1D-KiD/compare/2baae7441fbe53a16fa13447190d6bd3a0284470..v0.4.0) - 2026-11-25
+#### Bug Fixes
+- missing logger arg - ([28de19d](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/28de19d60c58e54ce0847535a057736c75eab12e)) - clara.bayley
+- wrong name for bin edges file - ([f80761c](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/f80761cf38f36abd77adb75cbde6c7b20b360f62)) - clara.bayley
+- correct axes - ([804c8cd](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/804c8cd68a89d22e696afe5f392ee58edda8541a)) - clara.bayley
+- path missing - ([24e1ce4](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/24e1ce45aa8e5b779ad4d41b3f32633e767a16e3)) - clara.bayley
+#### Continuous Integration
+- don't run model twice - ([214776d](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/214776dc452e84cd46ffb1764613c6dcad05c7fc)) - clara.bayley
+#### Documentation
+- include post-processing pysdm information - ([e45133d](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/e45133d3cf7ba60d87c51edda214ec03bbfb8feb)) - clara.bayley
+- include post-processing pysdm information - ([635a984](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/635a98470318c125ae081670113ea0946b802f3d)) - clara.bayley
+- document on cleo vs pysdm differences - ([f6fb1e8](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/f6fb1e878b1974b44c78ed98816e7d950e927676)) - clara.bayley
+#### Features
+- implementation for post-processing PySDM output - ([3f3e4cf](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/3f3e4cf76750b44e42e21d72b13bd1fd511275bc)) - clara.bayley
+- use alpha sampling in PySDM - ([e300e22](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/e300e22339068ccf2c3e644bfd28115361a4d13e)) - clara.bayley
+- implementation for running PySDM - ([5c6d1fc](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/5c6d1fc24623e08ebfa910b1d09098c5b2403fed)) - clara.bayley
+- implementation for inputfiles for PySDM - ([d680acd](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/d680acd714d516063e2bccf051225979b37c2966)) - clara.bayley
+- placeholder files for PySDM 1-D KiD - ([2baae74](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/2baae7441fbe53a16fa13447190d6bd3a0284470)) - clara.bayley
+#### Miscellaneous Chores
+- rename CLEO Cleo - ([d2370a0](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/d2370a0894491bcb766eff10a567659f15ce2517)) - clara.bayley
+- rename CLEO Cleo - ([f9108ac](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/f9108ac193329cae3ab3a09ef7b4967ac2e5fcff)) - clara.bayley
+- move common.py outside pympdata_driver - ([cae3b2c](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/cae3b2c0f627043be5d0d76df9a5a7e662ead3c0)) - clara.bayley
+#### Performance Improvements
+- correct docstring - ([eeba327](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/eeba3271495924a67b127141a236076542ab89c5)) - clara.bayley
+- bulk scheme only needs 1 ensemble member - ([afea5d5](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/afea5d5e1f26d239f5a502317087bc74bad4521b)) - clara.bayley
+- format progress counter - ([c591cd7](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/c591cd7dbf73041bada2a907a43333b6a221d675)) - clara.bayley
+- log when call completes - ([4d6a49e](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/4d6a49e05cc3b221ef59ade35d01b1c9a21fea93)) - clara.bayley
+- minor renaming - ([7a7ffe6](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/7a7ffe6b02a6ede384adc00ba8706af30805ec65)) - clara.bayley
+- correct date - ([d2ea75b](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/d2ea75b04757ed2d5a722e39777c44f4e3967ac7)) - clara.bayley
+- safe read floats from config - ([ce033e8](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/ce033e863cf60ce85efd0785a0caa2b2ec0554c0)) - clara.bayley
+- corrections - ([0b019ae](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/0b019aef1ff66c8facccca5ac93f9766fb0bf741)) - clara.bayley
+#### Refactoring
+- add post-processing for products to make variables in Hill plots - ([4de9f97](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/4de9f977c1e5f6992002c9dc9662e4c8fd196658)) - clara.bayley
+- move add_radar_reflectivity into common - ([90afcde](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/90afcde8dee949d9f1a77742563d1d2960641dec)) - clara.bayley
+- add products to PySDM output required for Hill plots - ([e82ac7a](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/e82ac7a210f8fee4557b49ef6f6d098c7aa5f087)) - clara.bayley
+- match cleo and pysdm metadata better - ([164b23a](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/164b23adc202674e87de22ffdd73625216c094c4)) - clara.bayley
+- use kappa=1.243 for PySDM - ([8cdfd95](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/8cdfd9539b7f129d5a96004c7bee14530354b185)) - clara.bayley
+- add msol distribution to pysdm post-processing - ([75e3a80](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/75e3a806401a08c3e3825618d8f2f0fe71d8f579)) - clara.bayley
+- post-process msol to number and mass of dry aersol distrib in Cleo - ([63ae49c](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/63ae49c9d3bb4ec6165ac161af7e7a8ca0506f0f)) - clara.bayley
+- move common post-processing functions into common - ([16befd7](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/16befd71f1a1b694a2f3fdeee1c1fb4816e79bc1)) - clara.bayley
+- minor changes to Cleo post-processing - ([5ca038d](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/5ca038d6c0142750001b10f61601c51f654b9ca3)) - clara.bayley
+- minor changes to match PyMPDATA to PySDM - ([5501917](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/550191747494d6b650501c482faffd2780009f85)) - clara.bayley
+- allow PySDM to use Exner thermodynamic profiles - ([d46dee4](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/d46dee46341b6aceef749d2779aca5aa4af9daba)) - clara.bayley
+- allow PySDM to take Hydrodynamic or Long collision kernel - ([060f388](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/060f38880947116abaa684b4915804437386ac5b)) - clara.bayley
+- make PySDM KiD setup similar or identical to microphysics schemes run directly with PYMPDATA - ([133b37a](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/133b37a831e3afb3fb3c85f54b704703c85db58e)) - clara.bayley
+- add print statement to pysdm runtime - ([4f65c82](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/4f65c82a9e2269d6efad1ee8b310cb263955c75e)) - clara.bayley
+
+- - -
+
 ## [v0.3.1](https://github.com/yoctoyotta1024/SDM-1D-KiD/compare/924ebe507f9dacff83d3613d01fb7d8ba497d695..v0.3.1) - 2026-11-20
 #### Bug Fixes
 - use random seeds for alpha sampling - ([a6f0513](https://github.com/yoctoyotta1024/SDM-1D-KiD/commit/a6f05130773ed9fd78779eeeec286aa4626fcab3)) - clara.bayley
